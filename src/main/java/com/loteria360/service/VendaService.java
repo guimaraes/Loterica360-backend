@@ -1,4 +1,4 @@
-package com.loteria360.domain.service;
+package com.loteria360.service;
 
 import com.loteria360.domain.dto.PagamentoRequest;
 import com.loteria360.domain.dto.VendaRequest;

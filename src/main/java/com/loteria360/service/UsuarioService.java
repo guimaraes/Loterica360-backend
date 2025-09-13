@@ -1,9 +1,9 @@
-package com.loteria360.domain.service;
+package com.loteria360.service;
 
 import com.loteria360.domain.dto.UsuarioRequest;
 import com.loteria360.domain.dto.UsuarioResponse;
 import com.loteria360.domain.model.Usuario;
-import com.loteria360.domain.repository.UsuarioRepository;
+import com.loteria360.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

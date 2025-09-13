@@ -1,4 +1,4 @@
-package com.loteria360.domain.repository;
+package com.loteria360.repository;
 
 import com.loteria360.domain.model.Venda;
 import org.springframework.data.jpa.repository.JpaRepository;
