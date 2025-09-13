@@ -2,7 +2,7 @@ package com.loteria360.web.controller;
 
 import com.loteria360.domain.dto.UsuarioRequest;
 import com.loteria360.domain.dto.UsuarioResponse;
-import com.loteria360.domain.service.UsuarioService;
+import com.loteria360.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

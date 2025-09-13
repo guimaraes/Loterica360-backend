@@ -1,4 +1,4 @@
-package com.loteria360.domain.mapper;
+package com.loteria360.mapper;
 
 import com.loteria360.domain.dto.UsuarioRequest;
 import com.loteria360.domain.dto.UsuarioResponse;

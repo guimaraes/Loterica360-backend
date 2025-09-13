@@ -1,7 +1,7 @@
 package com.loteria360.web.controller;
 
 import com.loteria360.domain.model.Turno;
-import com.loteria360.domain.service.TurnoService;
+import com.loteria360.service.TurnoService;
 import com.loteria360.security.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

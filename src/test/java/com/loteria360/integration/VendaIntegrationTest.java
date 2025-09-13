@@ -3,7 +3,7 @@ package com.loteria360.integration;
 import com.loteria360.domain.dto.PagamentoRequest;
 import com.loteria360.domain.dto.VendaRequest;
 import com.loteria360.domain.model.*;
-import com.loteria360.domain.repository.*;
+import com.loteria360.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

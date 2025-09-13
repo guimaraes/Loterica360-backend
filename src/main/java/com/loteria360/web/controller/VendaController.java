@@ -2,7 +2,7 @@ package com.loteria360.web.controller;
 
 import com.loteria360.domain.dto.VendaRequest;
 import com.loteria360.domain.dto.VendaResponse;
-import com.loteria360.domain.service.VendaService;
+import com.loteria360.service.VendaService;
 import com.loteria360.security.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

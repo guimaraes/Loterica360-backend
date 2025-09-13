@@ -1,7 +1,7 @@
 package com.loteria360.security;
 
 import com.loteria360.domain.model.Usuario;
-import com.loteria360.domain.service.UsuarioService;
+import com.loteria360.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
