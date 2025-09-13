@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/loteria360_test
+    username: loteria
+    password: loteria
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+  
+  flyway:
+    enabled: false
+
+logging:
+  level:
+    com.loteria360: DEBUG
+    org.springframework.security: DEBUG
