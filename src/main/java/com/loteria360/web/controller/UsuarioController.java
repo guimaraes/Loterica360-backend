@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,12 +23,14 @@ import java.util.UUID;
 public class UsuarioController {
     
     private final UsuarioService usuarioService;
+    private final PasswordEncoder passwordEncoder;
     
     @PostMapping
     @Operation(summary = "Criar usuário", description = "Cria um novo usuário no sistema")
     @PreAuthorize("hasRole('ADMIN') or hasRole('GERENTE')")
     public ResponseEntity<UsuarioResponse> criarUsuario(@Valid @RequestBody UsuarioRequest request) {
-        UsuarioResponse response = usuarioService.criarUsuario(request);
+        String senhaHash = passwordEncoder.encode(request.senha());
+        UsuarioResponse response = usuarioService.criarUsuario(request, senhaHash);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     

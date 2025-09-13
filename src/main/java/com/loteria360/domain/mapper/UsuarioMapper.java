@@ -11,7 +11,7 @@ public interface UsuarioMapper {
     
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "senhaHash", ignore = true)
-    @Mapping(target = "ativo", constant = "true")
+    @Mapping(target = "ativo", ignore = true)
     @Mapping(target = "criadoEm", ignore = true)
     @Mapping(target = "atualizadoEm", ignore = true)
     Usuario toEntity(UsuarioRequest request);

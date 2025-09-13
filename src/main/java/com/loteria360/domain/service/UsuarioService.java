@@ -5,7 +5,6 @@ import com.loteria360.domain.dto.UsuarioResponse;
 import com.loteria360.domain.model.Usuario;
 import com.loteria360.domain.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,10 +17,9 @@ import java.util.UUID;
 public class UsuarioService {
     
     private final UsuarioRepository usuarioRepository;
-    private final PasswordEncoder passwordEncoder;
     
     @Transactional
-    public UsuarioResponse criarUsuario(UsuarioRequest request) {
+    public UsuarioResponse criarUsuario(UsuarioRequest request, String senhaHash) {
         if (usuarioRepository.existsByEmail(request.email())) {
             throw new IllegalArgumentException("Email já cadastrado");
         }
@@ -29,7 +27,7 @@ public class UsuarioService {
         Usuario usuario = Usuario.builder()
                 .nome(request.nome())
                 .email(request.email())
-                .senhaHash(passwordEncoder.encode(request.senha()))
+                .senhaHash(senhaHash)
                 .papel(request.papel())
                 .ativo(true)
                 .build();

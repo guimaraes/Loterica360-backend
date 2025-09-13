@@ -25,7 +25,7 @@ public interface VendaMapper {
     @Mapping(target = "valorLiquido", ignore = true)
     @Mapping(target = "status", constant = "ATIVA")
     @Mapping(target = "motivoCancelamento", ignore = true)
-    @Mapping(target = "pagamentos", ignore = true)
+    @Mapping(target = "pagamentos", source = "pagamentos")
     @Mapping(target = "criadoEm", ignore = true)
     @Mapping(target = "atualizadoEm", ignore = true)
     Venda toEntity(VendaRequest request);
