@@ -1,167 +1,293 @@
 # Loteria360 Backend
 
-Backend API REST para sistema de casa lotérica desenvolvido com Java 17 e Spring Boot 3.
+Sistema de gestão para casas lotéricas desenvolvido com Spring Boot 3.x, Java 17 e MySQL 8.
 
-## Funcionalidades
+## 🚀 Tecnologias
 
-- **Autenticação e Autorização**: JWT com roles (ADMIN, GERENTE, VENDEDOR, AUDITOR)
-- **Cadastros**: Usuários, Jogos, Bolões, Formas de Pagamento, Caixas/Turnos
-- **Vendas**: Sistema completo com multi-pagamento (PIX, dinheiro, cartão)
-- **Caixa/Turno**: Abertura, sangria/suprimento, fechamento com resumo X/Z
-- **Comissões**: Regras por jogo/bolão e por vendedor
-- **Relatórios**: Vendas por período/vendedor/jogo/bolão, mix de pagamentos
-- **Auditoria**: Trilha completa de alterações e logs estruturados
-- **Documentação**: OpenAPI/Swagger UI completa
-
-## Tecnologias
-
-- **Java 17** + Spring Boot 3.3+
-- **PostgreSQL 16+** + Flyway
-- **JWT** para autenticação
-- **MapStruct** para mapeamento DTO/Entity
+- **Java 17**
+- **Spring Boot 3.3.0**
+- **Spring Security com JWT**
+- **MySQL 8**
+- **Flyway** para migrações
+- **MapStruct** para mapeamento DTO ↔ Entity
 - **Lombok** para redução de boilerplate
+- **OpenAPI/Swagger** para documentação
 - **Testcontainers** para testes de integração
-- **Docker** para ambiente de desenvolvimento
-- **OpenAPI 3** para documentação
-- **Micrometer** para observabilidade
+- **Docker Compose** para orquestração
 
-## Como Executar
-
-### Pré-requisitos
+## 📋 Pré-requisitos
 
 - Java 17+
-- Maven 3.9+
 - Docker e Docker Compose
+- Maven 3.8+
 
-### Execução Rápida
+## 🏃‍♂️ Execução Rápida
 
-```bash
-# 1. Subir o banco de dados
-make up
-
-# 2. Executar a aplicação
-make run
-
-# 3. Acessar a documentação
-# Swagger UI: http://localhost:8080/swagger-ui.html
-# API Docs: http://localhost:8080/v3/api-docs
-```
-
-### Comandos Disponíveis
+### 1. Subir os serviços de banco de dados
 
 ```bash
-make help          # Ver todos os comandos disponíveis
-make up            # Subir PostgreSQL e PgAdmin
-make down          # Parar containers
-make run           # Executar aplicação
-make test          # Executar testes
-make build         # Build da aplicação
-make clean         # Limpar build
-make format        # Formatar código
-make coverage      # Gerar relatório de cobertura
+docker compose up -d
 ```
 
-## API Endpoints
+### 2. Executar a aplicação
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+### 3. Acessar a aplicação
+
+- **API**: http://localhost:8080
+- **Swagger UI**: http://localhost:8080/swagger-ui.html
+- **Adminer**: http://localhost:8081
+
+## 🔐 Login Inicial
+
+O sistema vem com um usuário administrador pré-cadastrado:
+
+- **Email**: `admin@loteria360.local`
+- **Senha**: `admin`
+
+## 📚 Funcionalidades
+
+### Autenticação e Autorização
+- Login com JWT
+- RBAC (Role-Based Access Control) com papéis: ADMIN, GERENTE, VENDEDOR, AUDITOR
+
+### Gestão de Usuários
+- Cadastro de usuários com diferentes papéis
+- Ativação/desativação de usuários
+- Listagem com paginação
+
+### Gestão de Jogos
+- Cadastro de jogos (Mega-Sena, Lotofácil, etc.)
+- Ativação/desativação de jogos
+- Configuração de preços e regras
+
+### Gestão de Bolões
+- Criação de bolões para jogos
+- Controle de cotas disponíveis/vendidas
+- Encerramento e cancelamento de bolões
+
+### Sistema de Vendas
+- Venda de jogos individuais
+- Venda de cotas de bolão
+- Múltiplas formas de pagamento (Dinheiro, PIX, Cartão)
+- Emissão de recibos
+
+### Gestão de Turnos
+- Abertura e fechamento de turnos
+- Controle de caixa
+- Sangria e suprimento
+- Consolidação por método de pagamento
+
+### Relatórios
+- Vendas por período
+- Status de bolões e cotas
+- Pagamentos por método
+- Comissões calculadas
+
+### Auditoria
+- Trilha de alterações em tabelas críticas
+- Logs estruturados em JSON
+- Correlação de requisições com traceId
+
+## 🏗️ Arquitetura
+
+```
+com.loteria360
+├── Loteria360Application.java
+├── config/          # Configurações (Security, OpenAPI, CORS)
+├── security/        # JWT, Autenticação e Autorização
+├── domain/
+│   ├── model/       # Entidades JPA
+│   └── dto/         # DTOs de request/response
+├── mapper/          # Mappers MapStruct
+├── repository/      # Repositories JPA
+├── service/         # Regras de negócio
+├── controller/      # Controllers REST
+├── audit/           # Sistema de auditoria
+└── util/            # Utilitários
+```
+
+## 🗄️ Banco de Dados
+
+### Principais Tabelas
+
+- **usuario**: Usuários do sistema com papéis
+- **jogo**: Jogos disponíveis (Mega-Sena, Lotofácil, etc.)
+- **bolao**: Bolões de jogos com cotas
+- **venda**: Vendas realizadas
+- **pagamento**: Pagamentos das vendas
+- **turno**: Turnos de trabalho
+- **movimento_caixa**: Sangrias e suprimentos
+- **auditoria**: Trilha de auditoria
+
+### Migrações
+
+As migrações estão em `src/main/resources/db/migration/`:
+- `V1__baseline.sql`: Criação das tabelas
+- `V2__seed_data.sql`: Dados iniciais
+
+## 🧪 Testes
+
+### Executar todos os testes
+
+```bash
+./mvnw test
+```
+
+### Executar testes de integração
+
+```bash
+./mvnw test -Dtest="*IntegrationTest"
+```
+
+### Executar testes unitários
+
+```bash
+./mvnw test -Dtest="*Test" -Dtest="!*IntegrationTest"
+```
+
+## 🔧 Configuração
+
+### Profiles Disponíveis
+
+- **dev**: Desenvolvimento (logs detalhados, Swagger habilitado)
+- **test**: Testes (Testcontainers, logs mínimos)
+- **prod**: Produção (logs estruturados)
+
+### Variáveis de Ambiente
+
+```bash
+# JWT
+JWT_SECRET=sua-chave-secreta-jwt
+JWT_EXPIRATION=86400000
+
+# Database
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=loteria360
+DB_USER=loteria
+DB_PASSWORD=loteria
+```
+
+## 📡 API Endpoints
 
 ### Autenticação
-- `POST /auth/login` - Realizar login e obter JWT
+- `POST /api/v1/auth/login` - Login
 
-### Usuários (ADMIN/GERENTE)
-- `GET /usuarios` - Listar usuários
-- `POST /usuarios` - Criar usuário
-- `GET /usuarios/{id}` - Buscar usuário por ID
+### Usuários
+- `GET /api/v1/usuarios` - Listar usuários (ADMIN/GERENTE)
+- `POST /api/v1/usuarios` - Criar usuário (ADMIN)
+- `GET /api/v1/usuarios/{id}` - Buscar usuário
+- `PATCH /api/v1/usuarios/{id}/toggle-status` - Ativar/Desativar
 
-### Vendas (VENDEDOR/GERENTE)
-- `POST /vendas` - Criar venda (jogo ou bolão)
-- `POST /vendas/{id}/cancelar` - Cancelar venda (GERENTE)
+### Jogos
+- `GET /api/v1/jogos` - Listar jogos
+- `POST /api/v1/jogos` - Criar jogo (ADMIN/GERENTE)
+- `GET /api/v1/jogos/{id}` - Buscar jogo
+- `PATCH /api/v1/jogos/{id}/toggle-status` - Ativar/Desativar
 
-### Turnos (VENDEDOR/GERENTE)
-- `POST /turnos/abrir` - Abrir turno de caixa
-- `POST /turnos/{id}/fechar` - Fechar turno e gerar resumo X/Z
+### Bolões
+- `GET /api/v1/boloes` - Listar bolões
+- `POST /api/v1/boloes` - Criar bolão (ADMIN/GERENTE)
+- `GET /api/v1/boloes/{id}` - Buscar bolão
+- `PATCH /api/v1/boloes/{id}/encerrar` - Encerrar bolão
+- `PATCH /api/v1/boloes/{id}/cancelar` - Cancelar bolão
 
-## Exemplos de Uso
+### Vendas
+- `POST /api/v1/vendas/jogo` - Vender jogo
+- `POST /api/v1/vendas/bolao` - Vender cotas de bolão
+- `POST /api/v1/vendas/{id}/cancelar` - Cancelar venda (GERENTE)
+- `GET /api/v1/vendas` - Listar vendas
+- `GET /api/v1/vendas/{id}` - Buscar venda
 
-### 1. Login
+### Turnos
+- `POST /api/v1/turnos/abrir` - Abrir turno
+- `POST /api/v1/turnos/{id}/fechar` - Fechar turno
+- `GET /api/v1/turnos` - Listar turnos
+- `GET /api/v1/turnos/{id}` - Buscar turno
+
+### Movimentos de Caixa
+- `POST /api/v1/movimentos` - Registrar sangria/suprimento
+- `GET /api/v1/movimentos` - Listar movimentos
+- `GET /api/v1/movimentos/{id}` - Buscar movimento
+
+### Relatórios
+- `GET /api/v1/relatorios/vendas` - Relatório de vendas
+- `GET /api/v1/relatorios/boloes/status` - Status dos bolões
+- `GET /api/v1/relatorios/pagamentos` - Relatório de pagamentos
+
+## 🔒 Segurança
+
+### Papéis de Usuário
+
+- **ADMIN**: Acesso total ao sistema
+- **GERENTE**: Gestão de jogos, bolões, vendas e cancelamentos
+- **VENDEDOR**: Realização de vendas e gestão de turnos
+- **AUDITOR**: Apenas visualização de relatórios
+
+### JWT
+
+- Token expira em 24 horas
+- Header: `Authorization: Bearer <token>`
+- Claims incluem email e papéis do usuário
+
+## 📊 Monitoramento
+
+### Logs Estruturados
+
+Os logs são gerados em formato JSON com:
+- `traceId`: Correlação de requisições
+- `spanId`: Rastreamento de operações
+- `application`: Nome da aplicação
+- `environment`: Ambiente (dev/prod)
+
+### Auditoria
+
+Todas as operações críticas são auditadas:
+- Criação, alteração e exclusão de registros
+- Informações de antes/depois em JSON
+- Usuário responsável pela operação
+- Timestamp da operação
+
+## 🚀 Deploy
+
+### Docker
 
 ```bash
-curl -X POST http://localhost:8080/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@loteria360.com",
-    "senha": "admin123"
-  }'
+# Build da imagem
+docker build -t loteria360-backend .
+
+# Executar container
+docker run -p 8080:8080 \
+  -e JWT_SECRET=sua-chave \
+  -e DB_HOST=seu-banco \
+  loteria360-backend
 ```
 
-### 2. Criar Venda de Bolão com Multi-pagamento
+### Produção
 
-```bash
-curl -X POST http://localhost:8080/vendas \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <seu-token>" \
-  -d '{
-    "bolaoId": "uuid-do-bolao",
-    "cotas": 3,
-    "pagamentos": [
-      {
-        "metodo": "PIX",
-        "valor": 4.00,
-        "referencia": "PIX123456"
-      },
-      {
-        "metodo": "DINHEIRO",
-        "valor": 2.00
-      }
-    ]
-  }'
-```
+1. Configure as variáveis de ambiente
+2. Use um banco MySQL externo
+3. Configure logs para um sistema centralizado
+4. Configure monitoramento e alertas
 
-### 3. Criar Venda de Jogo
+## 🤝 Contribuição
 
-```bash
-curl -X POST http://localhost:8080/vendas \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <seu-token>" \
-  -d '{
-    "jogoId": "uuid-do-jogo",
-    "quantidade": 5,
-    "pagamentos": [
-      {
-        "metodo": "CARTAO_DEBITO",
-        "valor": 12.50,
-        "nsu": "123456789"
-      }
-    ]
-  }'
-```
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
 
-## Estrutura do Projeto
+## 📝 Licença
 
-```
-loteria360-backend/
-├── src/
-│   ├── main/
-│   │   ├── java/com/loteria360/
-│   │   │   ├── LoteriaApplication.java
-│   │   │   ├── config/
-│   │   │   ├── security/
-│   │   │   ├── domain/
-│   │   │   │   ├── model/
-│   │   │   │   ├── dto/
-│   │   │   │   ├── mapper/
-│   │   │   │   ├── repository/
-│   │   │   │   └── service/
-│   │   │   └── web/
-│   │   │       └── controller/
-│   │   └── resources/
-│   │       ├── application.yml
-│   │       └── db/migration/
-│   └── test/
-├── docker-compose.yml
-├── Makefile
-├── pom.xml
-└── README.md
-```
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-## Licença
+## 📞 Suporte
 
-MIT License
+Para suporte, entre em contato:
+- Email: contato@loteria360.com
+- Documentação: http://localhost:8080/swagger-ui.html

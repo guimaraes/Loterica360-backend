@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:tc:mysql:8.0:///testdb?TC_INITSCRIPT=classpath:db/migration/V1__baseline.sql
+    username: test
+    password: test
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  flyway:
+    enabled: false
+
+logging:
+  level:
+    com.loteria360: WARN
+    org.springframework.security: WARN
+    org.hibernate: WARN
