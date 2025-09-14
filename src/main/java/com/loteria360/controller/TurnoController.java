@@ -6,6 +6,9 @@ import com.loteria360.domain.model.Usuario;
 import com.loteria360.security.CurrentUser;
 import com.loteria360.service.TurnoService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -30,7 +33,21 @@ public class TurnoController {
     private final TurnoService turnoService;
 
     @PostMapping("/abrir")
-    @Operation(summary = "Abrir turno", description = "Abre um novo turno de trabalho")
+    @Operation(
+        summary = "Abrir turno", 
+        description = "Abre um novo turno de trabalho. O usuário é obtido automaticamente do token JWT.",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Dados para abertura do turno",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = AbrirTurnoRequest.class),
+                examples = @ExampleObject(
+                    name = "Exemplo de abertura de turno",
+                    value = "{\n  \"caixaId\": \"CAIXA-001\",\n  \"valorInicial\": 100.00\n}"
+                )
+            )
+        )
+    )
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'VENDEDOR')")
     public ResponseEntity<TurnoResponse> abrirTurno(
             @Valid @RequestBody AbrirTurnoRequest request,
