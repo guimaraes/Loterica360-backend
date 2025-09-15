@@ -18,4 +18,10 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, String> {
 
     @Query("SELECT p FROM Pagamento p WHERE p.venda.id = :vendaId AND p.status = 'APROVADO'")
     List<Pagamento> findAprovadosByVendaId(@Param("vendaId") String vendaId);
+
+    @Query("SELECT p FROM Pagamento p WHERE p.nsu = :nsu AND p.nsu IS NOT NULL")
+    List<Pagamento> findByNsu(@Param("nsu") String nsu);
+
+    @Query("SELECT p FROM Pagamento p WHERE p.tid = :tid AND p.tid IS NOT NULL")
+    List<Pagamento> findByTid(@Param("tid") String tid);
 }

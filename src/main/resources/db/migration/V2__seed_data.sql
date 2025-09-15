@@ -4,7 +4,7 @@
 -- Usuário administrador padrão
 -- Senha: admin (BCrypt hash)
 INSERT INTO usuario (id, nome, email, senha_hash, papel, ativo) VALUES 
-(UUID(), 'Administrador', 'admin@loteria360.local', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ADMIN', TRUE);
+(UUID(), 'Administrador', 'admin@loteria360.local', '$2a$10$zC1Wdfapz1AKzv1yNtokdOEOjcT625fgL2Xpe40qP2SJ2mJZ/Yf9C', 'ADMIN', TRUE);
 
 -- Jogos da Loteria Federal
 INSERT INTO jogo (id, nome, codigo, preco_base, regras_json, ativo) VALUES 

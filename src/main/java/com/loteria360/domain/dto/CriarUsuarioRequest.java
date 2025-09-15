@@ -1,5 +1,6 @@
 package com.loteria360.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.loteria360.domain.model.PapelUsuario;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -8,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CriarUsuarioRequest {
     
     @NotBlank(message = "Nome é obrigatório")

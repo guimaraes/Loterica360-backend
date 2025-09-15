@@ -76,6 +76,15 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Ativar/Desativar usuário", description = "Alterna o status ativo/inativo de um usuário (endpoint alternativo)")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UsuarioResponse> alterarStatusUsuario(@PathVariable String id) {
+        log.info("Alterando status do usuário via endpoint /status: {}", id);
+        UsuarioResponse response = usuarioService.ativarDesativarUsuario(id);
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/me")
     @Operation(summary = "Dados do usuário logado", description = "Retorna os dados do usuário autenticado")
     public ResponseEntity<UsuarioResponse> dadosUsuarioLogado(@CurrentUser Usuario usuario) {

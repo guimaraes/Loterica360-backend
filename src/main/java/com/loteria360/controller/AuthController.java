@@ -37,4 +37,13 @@ public class AuthController {
         LoginResponse.UsuarioResponse user = authService.getCurrentUser();
         return ResponseEntity.ok(user);
     }
+
+    @PostMapping("/logout")
+    @Operation(summary = "Realizar logout", description = "Realiza logout do usuário autenticado")
+    public ResponseEntity<?> logout() {
+        log.info("Logout realizado com sucesso");
+        // Para JWT, o logout é principalmente do lado do cliente (remover o token)
+        // Aqui podemos adicionar lógica adicional se necessário (blacklist de tokens, etc.)
+        return ResponseEntity.ok().body("{\"message\": \"Logout realizado com sucesso\"}");
+    }
 }

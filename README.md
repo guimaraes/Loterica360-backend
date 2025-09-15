@@ -176,12 +176,15 @@ DB_PASSWORD=loteria
 
 ### Autenticação
 - `POST /api/v1/auth/login` - Login
+- `POST /api/v1/auth/logout` - Logout
+- `GET /api/v1/auth/me` - Obter usuário atual
 
 ### Usuários
 - `GET /api/v1/usuarios` - Listar usuários (ADMIN/GERENTE)
 - `POST /api/v1/usuarios` - Criar usuário (ADMIN)
 - `GET /api/v1/usuarios/{id}` - Buscar usuário
 - `PATCH /api/v1/usuarios/{id}/toggle-status` - Ativar/Desativar
+- `PATCH /api/v1/usuarios/{id}/status` - Ativar/Desativar (endpoint alternativo)
 
 ### Jogos
 - `GET /api/v1/jogos` - Listar jogos

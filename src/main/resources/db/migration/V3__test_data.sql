@@ -2,11 +2,11 @@
 
 -- Usuários adicionais
 INSERT INTO usuario (id, nome, email, senha_hash, papel, ativo) VALUES
-(UUID(), 'João Silva', 'joao@loteria360.local', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'VENDEDOR', TRUE),
-(UUID(), 'Maria Santos', 'maria@loteria360.local', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'VENDEDOR', TRUE),
-(UUID(), 'Pedro Costa', 'pedro@loteria360.local', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'VENDEDOR', TRUE),
-(UUID(), 'Ana Oliveira', 'ana@loteria360.local', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'GERENTE', TRUE),
-(UUID(), 'Carlos Lima', 'carlos@loteria360.local', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'VENDEDOR', TRUE);
+(UUID(), 'João Silva', 'joao@loteria360.local', '$2a$10$NtkWbhXOJI4d7M6WBXm3xucJQZhSxEMvxkJgTT0HF0UVqVZwwLhH2', 'VENDEDOR', TRUE),
+(UUID(), 'Maria Santos', 'maria@loteria360.local', '$2a$10$NtkWbhXOJI4d7M6WBXm3xucJQZhSxEMvxkJgTT0HF0UVqVZwwLhH2', 'VENDEDOR', TRUE),
+(UUID(), 'Pedro Costa', 'pedro@loteria360.local', '$2a$10$NtkWbhXOJI4d7M6WBXm3xucJQZhSxEMvxkJgTT0HF0UVqVZwwLhH2', 'VENDEDOR', TRUE),
+(UUID(), 'Ana Oliveira', 'ana@loteria360.local', '$2a$10$NtkWbhXOJI4d7M6WBXm3xucJQZhSxEMvxkJgTT0HF0UVqVZwwLhH2', 'GERENTE', TRUE),
+(UUID(), 'Carlos Lima', 'carlos@loteria360.local', '$2a$10$NtkWbhXOJI4d7M6WBXm3xucJQZhSxEMvxkJgTT0HF0UVqVZwwLhH2', 'VENDEDOR', TRUE);
 
 -- Clientes
 INSERT INTO cliente (id, nome, cpf, telefone, email) VALUES

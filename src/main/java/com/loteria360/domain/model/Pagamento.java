@@ -42,6 +42,15 @@ public class Pagamento {
     @Builder.Default
     private LocalDateTime dataPagamento = LocalDateTime.now();
 
+    @Column(name = "nsu", length = 60)
+    private String nsu;
+
+    @Column(name = "tid", length = 60)
+    private String tid;
+
+    @Column(name = "referencia", length = 100)
+    private String referencia;
+
     @PrePersist
     protected void onCreate() {
         if (id == null) {
