@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 
 public enum StatusVenda {
-    ATIVA("Ativa"),
+    CONCLUIDA("Concluída"),
     CANCELADA("Cancelada");
 
     private final String descricao;

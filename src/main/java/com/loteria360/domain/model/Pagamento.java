@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -26,30 +27,28 @@ public class Pagamento {
     private Venda venda;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "metodo", nullable = false)
-    private MetodoPagamento metodo;
+    @Column(name = "metodo_pagamento", nullable = false)
+    private MetodoPagamento metodoPagamento;
 
     @Column(name = "valor", precision = 12, scale = 2, nullable = false)
     private BigDecimal valor;
-
-    @Column(name = "nsu", length = 60)
-    private String nsu;
-
-    @Column(name = "tid", length = 60)
-    private String tid;
-
-    @Column(name = "referencia", length = 100)
-    private String referencia;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     @Builder.Default
     private StatusPagamento status = StatusPagamento.APROVADO;
 
+    @Column(name = "data_pagamento", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime dataPagamento = LocalDateTime.now();
+
     @PrePersist
     protected void onCreate() {
         if (id == null) {
             id = UUID.randomUUID().toString();
+        }
+        if (dataPagamento == null) {
+            dataPagamento = LocalDateTime.now();
         }
     }
 

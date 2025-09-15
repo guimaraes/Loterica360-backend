@@ -21,16 +21,16 @@ CREATE TABLE turno (
     id VARCHAR(36) PRIMARY KEY,
     usuario_id VARCHAR(36) NOT NULL,
     caixa_id VARCHAR(50) NOT NULL,
-    aberto_em TIMESTAMP NOT NULL,
-    fechado_em TIMESTAMP NULL,
+    data_abertura TIMESTAMP NOT NULL,
+    data_fechamento TIMESTAMP NULL,
     valor_inicial DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-    valor_fechamento DECIMAL(12,2) NULL,
+    valor_final DECIMAL(12,2) NULL,
     status ENUM('ABERTO', 'FECHADO') NOT NULL DEFAULT 'ABERTO',
     
     FOREIGN KEY (usuario_id) REFERENCES usuario(id),
     INDEX idx_turno_usuario (usuario_id),
     INDEX idx_turno_status (status),
-    INDEX idx_turno_aberto_em (aberto_em)
+    INDEX idx_turno_data_abertura (data_abertura)
 );
 
 -- Jogos disponíveis
@@ -66,68 +66,6 @@ CREATE TABLE bolao (
     CONSTRAINT chk_bolao_cotas CHECK (cotas_vendidas <= cotas_totais)
 );
 
--- Vendas realizadas
-CREATE TABLE venda (
-    id VARCHAR(36) PRIMARY KEY,
-    turno_id VARCHAR(36) NOT NULL,
-    usuario_id VARCHAR(36) NOT NULL,
-    tipo ENUM('JOGO', 'BOLAO') NOT NULL,
-    jogo_id CHAR(36) NULL,
-    bolao_id CHAR(36) NULL,
-    quantidade_apostas INT NULL,
-    cotas_vendidas INT NULL,
-    valor_bruto DECIMAL(12,2) NOT NULL,
-    desconto DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-    acrescimo DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-    valor_liquido DECIMAL(12,2) NOT NULL,
-    status ENUM('ATIVA', 'CANCELADA') NOT NULL DEFAULT 'ATIVA',
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    motivo_cancelamento VARCHAR(200) NULL,
-    
-    FOREIGN KEY (turno_id) REFERENCES turno(id),
-    FOREIGN KEY (usuario_id) REFERENCES usuario(id),
-    FOREIGN KEY (jogo_id) REFERENCES jogo(id),
-    FOREIGN KEY (bolao_id) REFERENCES bolao(id),
-    INDEX idx_venda_turno (turno_id),
-    INDEX idx_venda_usuario (usuario_id),
-    INDEX idx_venda_bolao (bolao_id),
-    INDEX idx_venda_criado_em (criado_em),
-    INDEX idx_venda_status (status),
-    INDEX idx_venda_tipo (tipo)
-);
-
--- Pagamentos das vendas
-CREATE TABLE pagamento (
-    id VARCHAR(36) PRIMARY KEY,
-    venda_id VARCHAR(36) NOT NULL,
-    metodo ENUM('DINHEIRO', 'PIX', 'CARTAO_DEBITO', 'CARTAO_CREDITO') NOT NULL,
-    valor DECIMAL(12,2) NOT NULL,
-    nsu VARCHAR(60) NULL,
-    tid VARCHAR(60) NULL,
-    referencia VARCHAR(100) NULL,
-    status ENUM('APROVADO', 'PENDENTE', 'ESTORNADO') NOT NULL DEFAULT 'APROVADO',
-    
-    FOREIGN KEY (venda_id) REFERENCES venda(id),
-    INDEX idx_pagamento_venda (venda_id),
-    INDEX idx_pagamento_metodo (metodo),
-    INDEX idx_pagamento_status (status)
-);
-
--- Movimentos de caixa (sangria/suprimento)
-CREATE TABLE movimento_caixa (
-    id VARCHAR(36) PRIMARY KEY,
-    turno_id VARCHAR(36) NOT NULL,
-    tipo ENUM('SANGRIA', 'SUPRIMENTO') NOT NULL,
-    valor DECIMAL(12,2) NOT NULL,
-    observacao VARCHAR(200),
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    FOREIGN KEY (turno_id) REFERENCES turno(id),
-    INDEX idx_movimento_turno (turno_id),
-    INDEX idx_movimento_tipo (tipo),
-    INDEX idx_movimento_criado_em (criado_em)
-);
-
 -- Clientes (opcional)
 CREATE TABLE cliente (
     id VARCHAR(36) PRIMARY KEY,
@@ -142,35 +80,93 @@ CREATE TABLE cliente (
     INDEX idx_cliente_email (email)
 );
 
+-- Vendas realizadas
+CREATE TABLE venda (
+    id VARCHAR(36) PRIMARY KEY,
+    turno_id VARCHAR(36) NOT NULL,
+    jogo_id VARCHAR(36) NULL,
+    bolao_id VARCHAR(36) NULL,
+    cliente_id VARCHAR(36) NULL,
+    tipo_venda ENUM('JOGO_INDIVIDUAL', 'BOLAO') NOT NULL,
+    valor_total DECIMAL(12,2) NOT NULL,
+    status ENUM('CONCLUIDA', 'CANCELADA') NOT NULL DEFAULT 'CONCLUIDA',
+    data_venda TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    numeros_jogados VARCHAR(255) NULL,
+    cotas_compradas INT NULL,
+    
+    FOREIGN KEY (turno_id) REFERENCES turno(id),
+    FOREIGN KEY (jogo_id) REFERENCES jogo(id),
+    FOREIGN KEY (bolao_id) REFERENCES bolao(id),
+    FOREIGN KEY (cliente_id) REFERENCES cliente(id),
+    INDEX idx_venda_turno (turno_id),
+    INDEX idx_venda_jogo (jogo_id),
+    INDEX idx_venda_bolao (bolao_id),
+    INDEX idx_venda_cliente (cliente_id),
+    INDEX idx_venda_data_venda (data_venda),
+    INDEX idx_venda_status (status),
+    INDEX idx_venda_tipo (tipo_venda)
+);
+
+-- Pagamentos das vendas
+CREATE TABLE pagamento (
+    id VARCHAR(36) PRIMARY KEY,
+    venda_id VARCHAR(36) NOT NULL,
+    metodo_pagamento ENUM('DINHEIRO', 'PIX', 'CARTAO_DEBITO', 'CARTAO_CREDITO') NOT NULL,
+    valor DECIMAL(12,2) NOT NULL,
+    status ENUM('APROVADO', 'PENDENTE', 'ESTORNADO') NOT NULL DEFAULT 'APROVADO',
+    data_pagamento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (venda_id) REFERENCES venda(id),
+    INDEX idx_pagamento_venda (venda_id),
+    INDEX idx_pagamento_metodo (metodo_pagamento),
+    INDEX idx_pagamento_status (status)
+);
+
+-- Movimentos de caixa (sangria/suprimento)
+CREATE TABLE movimento_caixa (
+    id VARCHAR(36) PRIMARY KEY,
+    turno_id VARCHAR(36) NOT NULL,
+    tipo_movimento ENUM('ENTRADA', 'SAIDA') NOT NULL,
+    valor DECIMAL(12,2) NOT NULL,
+    descricao VARCHAR(200),
+    data_movimento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (turno_id) REFERENCES turno(id),
+    INDEX idx_movimento_turno (turno_id),
+    INDEX idx_movimento_tipo (tipo_movimento),
+    INDEX idx_movimento_data (data_movimento)
+);
+
 -- Auditoria de mudanças
 CREATE TABLE auditoria (
     id VARCHAR(36) PRIMARY KEY,
-    tabela VARCHAR(50) NOT NULL,
+    tabela_afetada VARCHAR(50) NOT NULL,
     registro_id VARCHAR(36) NOT NULL,
-    acao ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
-    antes_json JSON NULL,
-    depois_json JSON NULL,
+    operacao ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
+    dados_anteriores JSON NULL,
+    dados_novos JSON NULL,
     usuario_id VARCHAR(36) NOT NULL,
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_operacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     FOREIGN KEY (usuario_id) REFERENCES usuario(id),
-    INDEX idx_auditoria_tabela (tabela),
+    INDEX idx_auditoria_tabela (tabela_afetada),
     INDEX idx_auditoria_registro (registro_id),
     INDEX idx_auditoria_usuario (usuario_id),
-    INDEX idx_auditoria_criado_em (criado_em)
+    INDEX idx_auditoria_data (data_operacao)
 );
 
 -- Regras de comissão
 CREATE TABLE comissao_regra (
     id VARCHAR(36) PRIMARY KEY,
-    escopo ENUM('JOGO', 'BOLAO', 'VENDEDOR') NOT NULL,
-    referencia_id VARCHAR(36) NOT NULL,
-    percentual DECIMAL(5,2) NOT NULL,
-    vigente_de DATE NOT NULL,
-    vigente_ate DATE NULL,
+    jogo_id VARCHAR(36) NULL,
+    tipo_venda ENUM('JOGO_INDIVIDUAL', 'BOLAO') NOT NULL,
+    percentual_comissao DECIMAL(5,2) NOT NULL,
+    valor_minimo DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+    valor_maximo DECIMAL(12,2) NOT NULL DEFAULT 999999.99,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
     
-    INDEX idx_comissao_escopo (escopo),
-    INDEX idx_comissao_referencia (referencia_id),
-    INDEX idx_comissao_vigente_de (vigente_de),
-    INDEX idx_comissao_vigente_ate (vigente_ate)
+    FOREIGN KEY (jogo_id) REFERENCES jogo(id),
+    INDEX idx_comissao_jogo (jogo_id),
+    INDEX idx_comissao_tipo_venda (tipo_venda),
+    INDEX idx_comissao_ativo (ativo)
 );

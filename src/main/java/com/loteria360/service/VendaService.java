@@ -56,9 +56,7 @@ public class VendaService {
         Venda venda = vendaMapper.toEntity(request);
         venda.setId(UUID.randomUUID().toString());
         venda.setTurno(turnoAtivo);
-        venda.setUsuario(usuario);
-        venda.setValorBruto(valorBruto);
-        venda.setValorLiquido(valorLiquido);
+        venda.setValorTotal(valorLiquido);
 
         Cliente cliente = null;
         if (request.getCliente() != null) {
@@ -110,9 +108,7 @@ public class VendaService {
         Venda venda = vendaMapper.toEntity(request);
         venda.setId(UUID.randomUUID().toString());
         venda.setTurno(turnoAtivo);
-        venda.setUsuario(usuario);
-        venda.setValorBruto(valorBruto);
-        venda.setValorLiquido(valorLiquido);
+        venda.setValorTotal(valorLiquido);
 
         Cliente cliente = null;
         if (request.getCliente() != null) {
@@ -158,10 +154,10 @@ public class VendaService {
         venda.cancelar(request.getMotivoCancelamento());
 
         // Se for venda de bolão, devolver as cotas
-        if (venda.getTipo() == TipoVenda.BOLAO && venda.getBolao() != null) {
+        if (venda.getTipoVenda() == TipoVenda.BOLAO && venda.getBolao() != null) {
             Bolao bolao = bolaoRepository.findByIdWithLock(venda.getBolao().getId())
                     .orElseThrow(() -> new IllegalArgumentException("Bolão não encontrado"));
-            bolao.decrementarCotasVendidas(venda.getCotasVendidas());
+            bolao.decrementarCotasVendidas(venda.getCotasCompradas());
             bolaoRepository.save(bolao);
         }
 

@@ -11,7 +11,7 @@ public interface MovimentoCaixaMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "turno", ignore = true)
-    @Mapping(target = "criadoEm", ignore = true)
+    @Mapping(target = "dataMovimento", ignore = true)
     MovimentoCaixa toEntity(MovimentoCaixaRequest request);
 
     MovimentoCaixaResponse toResponse(MovimentoCaixa movimento);

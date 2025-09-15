@@ -30,14 +30,6 @@ public class Venda {
     private Turno turno;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false)
-    private TipoVenda tipo;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "jogo_id")
     private Jogo jogo;
 
@@ -45,37 +37,31 @@ public class Venda {
     @JoinColumn(name = "bolao_id")
     private Bolao bolao;
 
-    @Column(name = "quantidade_apostas")
-    private Integer quantidadeApostas;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id")
+    private Cliente cliente;
 
-    @Column(name = "cotas_vendidas")
-    private Integer cotasVendidas;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_venda", nullable = false)
+    private TipoVenda tipoVenda;
 
-    @Column(name = "valor_bruto", precision = 12, scale = 2, nullable = false)
-    private BigDecimal valorBruto;
-
-    @Column(name = "desconto", precision = 12, scale = 2, nullable = false)
-    @Builder.Default
-    private BigDecimal desconto = BigDecimal.ZERO;
-
-    @Column(name = "acrescimo", precision = 12, scale = 2, nullable = false)
-    @Builder.Default
-    private BigDecimal acrescimo = BigDecimal.ZERO;
-
-    @Column(name = "valor_liquido", precision = 12, scale = 2, nullable = false)
-    private BigDecimal valorLiquido;
+    @Column(name = "valor_total", precision = 12, scale = 2, nullable = false)
+    private BigDecimal valorTotal;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     @Builder.Default
-    private StatusVenda status = StatusVenda.ATIVA;
+    private StatusVenda status = StatusVenda.CONCLUIDA;
 
     @CreationTimestamp
-    @Column(name = "criado_em", nullable = false, updatable = false)
-    private LocalDateTime criadoEm;
+    @Column(name = "data_venda", nullable = false, updatable = false)
+    private LocalDateTime dataVenda;
 
-    @Column(name = "motivo_cancelamento", length = 200)
-    private String motivoCancelamento;
+    @Column(name = "numeros_jogados", length = 255)
+    private String numerosJogados;
+
+    @Column(name = "cotas_compradas")
+    private Integer cotasCompradas;
 
     @OneToMany(mappedBy = "venda", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
@@ -90,15 +76,10 @@ public class Venda {
 
     public void cancelar(String motivo) {
         this.status = StatusVenda.CANCELADA;
-        this.motivoCancelamento = motivo;
     }
 
-    public BigDecimal calcularValorLiquido() {
-        return valorBruto.subtract(desconto).add(acrescimo);
-    }
-
-    public boolean isAtiva() {
-        return status == StatusVenda.ATIVA;
+    public boolean isConcluida() {
+        return status == StatusVenda.CONCLUIDA;
     }
 
     public boolean isCancelada() {

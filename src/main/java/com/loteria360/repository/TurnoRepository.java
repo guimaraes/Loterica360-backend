@@ -30,14 +30,14 @@ public interface TurnoRepository extends JpaRepository<Turno, String> {
     Optional<Turno> findByCaixaIdAndStatus(@Param("caixaId") String caixaId, 
                                          @Param("status") StatusTurno status);
 
-    @Query("SELECT t FROM Turno t WHERE t.abertoEm BETWEEN :dataInicio AND :dataFim")
-    Page<Turno> findByAbertoEmBetween(@Param("dataInicio") LocalDateTime dataInicio, 
-                                     @Param("dataFim") LocalDateTime dataFim, 
-                                     Pageable pageable);
+    @Query("SELECT t FROM Turno t WHERE t.dataAbertura BETWEEN :dataInicio AND :dataFim")
+    Page<Turno> findByDataAberturaBetween(@Param("dataInicio") LocalDateTime dataInicio, 
+                                         @Param("dataFim") LocalDateTime dataFim, 
+                                         Pageable pageable);
 
-    @Query("SELECT t FROM Turno t WHERE t.usuario.id = :usuarioId AND t.abertoEm BETWEEN :dataInicio AND :dataFim")
-    Page<Turno> findByUsuarioIdAndAbertoEmBetween(@Param("usuarioId") String usuarioId,
-                                                 @Param("dataInicio") LocalDateTime dataInicio, 
-                                                 @Param("dataFim") LocalDateTime dataFim, 
-                                                 Pageable pageable);
+    @Query("SELECT t FROM Turno t WHERE t.usuario.id = :usuarioId AND t.dataAbertura BETWEEN :dataInicio AND :dataFim")
+    Page<Turno> findByUsuarioIdAndDataAberturaBetween(@Param("usuarioId") String usuarioId,
+                                                     @Param("dataInicio") LocalDateTime dataInicio, 
+                                                     @Param("dataFim") LocalDateTime dataFim, 
+                                                     Pageable pageable);
 }

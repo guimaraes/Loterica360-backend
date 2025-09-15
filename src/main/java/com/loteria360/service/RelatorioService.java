@@ -39,9 +39,9 @@ public class RelatorioService {
 
         Page<Venda> vendas;
         if (vendedorId != null) {
-            vendas = vendaRepository.findByUsuarioIdAndCriadoEmBetween(vendedorId, inicio, fim, PageRequest.of(0, 1000));
+            vendas = vendaRepository.findByUsuarioIdAndDataVendaBetween(vendedorId, inicio, fim, PageRequest.of(0, 1000));
         } else {
-            vendas = vendaRepository.findByCriadoEmBetween(inicio, fim, PageRequest.of(0, 1000));
+            vendas = vendaRepository.findByDataVendaBetween(inicio, fim, PageRequest.of(0, 1000));
         }
 
         String vendedorNome = null;
@@ -52,14 +52,14 @@ public class RelatorioService {
         }
 
         BigDecimal totalVendas = vendas.getContent().stream()
-                .filter(v -> v.getStatus() == StatusVenda.ATIVA)
-                .map(Venda::getValorLiquido)
+                .filter(v -> v.getStatus() == StatusVenda.CONCLUIDA)
+                .map(Venda::getValorTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalComissoes = BigDecimal.ZERO; // TODO: Implementar cálculo de comissões
 
         int totalVendasCount = (int) vendas.getContent().stream()
-                .filter(v -> v.getStatus() == StatusVenda.ATIVA)
+                .filter(v -> v.getStatus() == StatusVenda.CONCLUIDA)
                 .count();
 
         int totalVendasCanceladas = (int) vendas.getContent().stream()
@@ -69,10 +69,10 @@ public class RelatorioService {
         List<RelatorioVendasResponse.VendaResumoResponse> vendasResumo = vendas.getContent().stream()
                 .map(v -> RelatorioVendasResponse.VendaResumoResponse.builder()
                         .id(v.getId())
-                        .tipo(v.getTipo().name())
-                        .valorLiquido(v.getValorLiquido())
+                        .tipo(v.getTipoVenda().name())
+                        .valorLiquido(v.getValorTotal())
                         .status(v.getStatus().name())
-                        .criadoEm(v.getCriadoEm().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                        .criadoEm(v.getDataVenda().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
                         .build())
                 .collect(Collectors.toList());
 
@@ -139,14 +139,14 @@ public class RelatorioService {
         LocalDateTime inicio = dataInicio.atStartOfDay();
         LocalDateTime fim = dataFim.atTime(LocalTime.MAX);
 
-        List<Venda> vendas = vendaRepository.findByCriadoEmBetween(inicio, fim, PageRequest.of(0, 1000)).getContent();
+        List<Venda> vendas = vendaRepository.findByDataVendaBetween(inicio, fim, PageRequest.of(0, 1000)).getContent();
 
         return vendas.stream()
-                .filter(v -> v.getStatus() == StatusVenda.ATIVA)
+                .filter(v -> v.getStatus() == StatusVenda.CONCLUIDA)
                 .flatMap(v -> v.getPagamentos().stream())
                 .filter(p -> p.getStatus() == StatusPagamento.APROVADO)
                 .collect(Collectors.groupingBy(
-                        Pagamento::getMetodo,
+                        Pagamento::getMetodoPagamento,
                         Collectors.reducing(BigDecimal.ZERO, Pagamento::getValor, BigDecimal::add)
                 ));
     }

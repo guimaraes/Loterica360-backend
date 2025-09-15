@@ -29,18 +29,18 @@ public class Turno {
     @Column(name = "caixa_id", length = 50, nullable = false)
     private String caixaId;
 
-    @Column(name = "aberto_em", nullable = false)
-    private LocalDateTime abertoEm;
+    @Column(name = "data_abertura", nullable = false)
+    private LocalDateTime dataAbertura;
 
-    @Column(name = "fechado_em")
-    private LocalDateTime fechadoEm;
+    @Column(name = "data_fechamento")
+    private LocalDateTime dataFechamento;
 
     @Column(name = "valor_inicial", precision = 12, scale = 2, nullable = false)
     @Builder.Default
     private BigDecimal valorInicial = BigDecimal.ZERO;
 
-    @Column(name = "valor_fechamento", precision = 12, scale = 2)
-    private BigDecimal valorFechamento;
+    @Column(name = "valor_final", precision = 12, scale = 2)
+    private BigDecimal valorFinal;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -52,8 +52,8 @@ public class Turno {
         if (id == null) {
             id = UUID.randomUUID().toString();
         }
-        if (abertoEm == null) {
-            abertoEm = LocalDateTime.now();
+        if (dataAbertura == null) {
+            dataAbertura = LocalDateTime.now();
         }
     }
 }

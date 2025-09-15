@@ -20,6 +20,8 @@ public class VendaJogoRequest {
     @Positive(message = "Quantidade deve ser maior que zero")
     private Integer quantidade;
     
+    private String numeros;
+    
     @Valid
     @NotEmpty(message = "Pelo menos um pagamento é obrigatório")
     private List<PagamentoRequest> pagamentos;

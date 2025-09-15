@@ -13,9 +13,9 @@ public interface TurnoMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "usuario", ignore = true)
-    @Mapping(target = "abertoEm", ignore = true)
-    @Mapping(target = "fechadoEm", ignore = true)
-    @Mapping(target = "valorFechamento", ignore = true)
+    @Mapping(target = "dataAbertura", ignore = true)
+    @Mapping(target = "dataFechamento", ignore = true)
+    @Mapping(target = "valorFinal", ignore = true)
     @Mapping(target = "status", ignore = true)
     Turno toEntity(AbrirTurnoRequest request);
 

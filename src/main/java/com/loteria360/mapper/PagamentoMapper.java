@@ -14,6 +14,8 @@ public interface PagamentoMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "venda", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "dataPagamento", ignore = true)
+    @Mapping(source = "metodo", target = "metodoPagamento")
     Pagamento toEntity(PagamentoRequest request);
 
     PagamentoResponse toResponse(Pagamento pagamento);

@@ -37,14 +37,16 @@ public class MovimentoCaixa {
     @Column(name = "observacao", length = 200)
     private String observacao;
 
-    @CreationTimestamp
-    @Column(name = "criado_em", nullable = false, updatable = false)
-    private LocalDateTime criadoEm;
+    @Column(name = "data_movimento", nullable = false, updatable = false)
+    private LocalDateTime dataMovimento;
 
     @PrePersist
     protected void onCreate() {
         if (id == null) {
             id = UUID.randomUUID().toString();
+        }
+        if (dataMovimento == null) {
+            dataMovimento = LocalDateTime.now();
         }
     }
 

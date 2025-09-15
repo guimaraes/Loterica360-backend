@@ -48,7 +48,7 @@ public class TurnoService {
         Turno turno = turnoMapper.toEntity(request);
         turno.setId(UUID.randomUUID().toString());
         turno.setUsuario(usuario);
-        turno.setAbertoEm(LocalDateTime.now());
+        turno.setDataAbertura(LocalDateTime.now());
 
         Turno turnoSalvo = turnoRepository.save(turno);
         log.info("Turno aberto com sucesso: {}", turnoSalvo.getId());
@@ -73,14 +73,14 @@ public class TurnoService {
         // Calcular valor de fechamento baseado nas vendas
         List<Venda> vendasAtivas = vendaRepository.findVendasAtivasByTurnoId(id);
         BigDecimal totalVendas = vendasAtivas.stream()
-                .map(Venda::getValorLiquido)
+                .map(Venda::getValorTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // Consolidar por método de pagamento
         List<Pagamento> pagamentos = pagamentoRepository.findByVendaTurnoId(id);
         Map<MetodoPagamento, BigDecimal> consolidado = pagamentos.stream()
                 .collect(Collectors.groupingBy(
-                        Pagamento::getMetodo,
+                        Pagamento::getMetodoPagamento,
                         Collectors.reducing(BigDecimal.ZERO, Pagamento::getValor, BigDecimal::add)
                 ));
 
@@ -89,8 +89,8 @@ public class TurnoService {
                 log.info("{}: {}", metodo, valor));
 
         turno.setStatus(StatusTurno.FECHADO);
-        turno.setFechadoEm(LocalDateTime.now());
-        turno.setValorFechamento(totalVendas.add(turno.getValorInicial()));
+        turno.setDataFechamento(LocalDateTime.now());
+        turno.setValorFinal(totalVendas.add(turno.getValorInicial()));
 
         Turno turnoSalvo = turnoRepository.save(turno);
         log.info("Turno fechado com sucesso: {}", turnoSalvo.getId());

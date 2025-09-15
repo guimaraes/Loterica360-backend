@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 
 public enum TipoVenda {
-    JOGO("Jogo Individual"),
+    JOGO_INDIVIDUAL("Jogo Individual"),
     BOLAO("Cota de Bolão");
 
     private final String descricao;
