@@ -18,6 +18,6 @@ public class MovimentoCaixaRequest {
     @DecimalMin(value = "0.01", message = "Valor deve ser maior que zero")
     private BigDecimal valor;
     
-    @Size(max = 200, message = "Observação deve ter no máximo 200 caracteres")
-    private String observacao;
+    @Size(max = 200, message = "Descrição deve ter no máximo 200 caracteres")
+    private String descricao;
 }

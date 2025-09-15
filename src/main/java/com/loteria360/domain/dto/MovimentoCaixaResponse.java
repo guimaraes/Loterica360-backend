@@ -19,6 +19,6 @@ public class MovimentoCaixaResponse {
     private String turnoId;
     private TipoMovimentoCaixa tipo;
     private BigDecimal valor;
-    private String observacao;
+    private String descricao;
     private LocalDateTime criadoEm;
 }

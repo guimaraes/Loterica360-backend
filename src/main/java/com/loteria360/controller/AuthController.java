@@ -2,6 +2,8 @@ package com.loteria360.controller;
 
 import com.loteria360.domain.dto.LoginRequest;
 import com.loteria360.domain.dto.LoginResponse;
+import com.loteria360.domain.model.Usuario;
+import com.loteria360.security.CurrentUser;
 import com.loteria360.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,5 +28,13 @@ public class AuthController {
         log.info("Tentativa de login para email: {}", request.getEmail());
         LoginResponse response = authService.login(request);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "Obter usuário atual", description = "Retorna os dados do usuário autenticado")
+    public ResponseEntity<LoginResponse.UsuarioResponse> getCurrentUser() {
+        log.info("Obtendo dados do usuário atual");
+        LoginResponse.UsuarioResponse user = authService.getCurrentUser();
+        return ResponseEntity.ok(user);
     }
 }

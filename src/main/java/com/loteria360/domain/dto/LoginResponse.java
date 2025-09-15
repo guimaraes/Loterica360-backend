@@ -28,5 +28,7 @@ public class LoginResponse {
         private String nome;
         private String email;
         private PapelUsuario papel;
+        private Boolean ativo;
+        private LocalDateTime criadoEm;
     }
 }

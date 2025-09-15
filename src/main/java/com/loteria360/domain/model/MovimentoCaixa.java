@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -34,8 +33,8 @@ public class MovimentoCaixa {
     @Column(name = "valor", precision = 12, scale = 2, nullable = false)
     private BigDecimal valor;
 
-    @Column(name = "observacao", length = 200)
-    private String observacao;
+    @Column(name = "descricao", length = 200)
+    private String descricao;
 
     @Column(name = "data_movimento", nullable = false, updatable = false)
     private LocalDateTime dataMovimento;
