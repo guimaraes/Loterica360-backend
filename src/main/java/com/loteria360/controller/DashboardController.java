@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -52,5 +53,48 @@ public class DashboardController {
         log.info("Obtendo atividades recentes");
         Map<String, Object> activity = dashboardService.getRecentActivity();
         return ResponseEntity.ok(activity);
+    }
+
+    @GetMapping("/performance-analysis")
+    @Operation(summary = "Análise de desempenho por período", description = "Analisa vendas em um período específico com comparações")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'AUDITOR')")
+    public ResponseEntity<Map<String, Object>> getPerformanceAnalysis(
+            @RequestParam String dataInicio,
+            @RequestParam String dataFim,
+            @RequestParam(required = false) String tipoComparacao) {
+        log.info("Análise de desempenho de {} a {} com comparação: {}", dataInicio, dataFim, tipoComparacao);
+        
+        LocalDate inicio = LocalDate.parse(dataInicio);
+        LocalDate fim = LocalDate.parse(dataFim);
+        
+        Map<String, Object> analysis = dashboardService.getPerformanceAnalysis(inicio, fim, tipoComparacao);
+        return ResponseEntity.ok(analysis);
+    }
+
+    @GetMapping("/monthly-comparison")
+    @Operation(summary = "Comparação mês a mês", description = "Compara vendas dos últimos 12 meses")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'AUDITOR')")
+    public ResponseEntity<Map<String, Object>> getMonthlyComparison() {
+        log.info("Obtendo comparação mensal");
+        Map<String, Object> comparison = dashboardService.getMonthlyComparison();
+        return ResponseEntity.ok(comparison);
+    }
+
+    @GetMapping("/yearly-comparison")
+    @Operation(summary = "Comparação ano a ano", description = "Compara vendas dos últimos anos")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'AUDITOR')")
+    public ResponseEntity<Map<String, Object>> getYearlyComparison() {
+        log.info("Obtendo comparação anual");
+        Map<String, Object> comparison = dashboardService.getYearlyComparison();
+        return ResponseEntity.ok(comparison);
+    }
+
+    @GetMapping("/trend-analysis")
+    @Operation(summary = "Análise de tendências", description = "Analisa tendências e sazonalidade das vendas")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'AUDITOR')")
+    public ResponseEntity<Map<String, Object>> getTrendAnalysis() {
+        log.info("Obtendo análise de tendências");
+        Map<String, Object> trends = dashboardService.getTrendAnalysis();
+        return ResponseEntity.ok(trends);
     }
 }
