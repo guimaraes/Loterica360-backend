@@ -8,10 +8,12 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "bolao")
+@Table(name = "bolao", 
+       uniqueConstraints = @UniqueConstraint(name = "uk_bolao_jogo_concurso", columnNames = {"jogo_id", "concurso"}))
 @Data
 @Builder
 @NoArgsConstructor
@@ -39,6 +41,9 @@ public class Bolao {
     @Builder.Default
     private Integer cotasVendidas = 0;
 
+    @Column(name = "cotas_disponiveis", nullable = false)
+    private Integer cotasDisponiveis;
+
     @Column(name = "valor_cota", precision = 10, scale = 2, nullable = false)
     private BigDecimal valorCota;
 
@@ -50,32 +55,27 @@ public class Bolao {
     @Builder.Default
     private StatusBolao status = StatusBolao.ABERTO;
 
+    @Column(name = "criado_em", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime criadoEm = LocalDateTime.now();
+
     @PrePersist
     protected void onCreate() {
         if (id == null) {
             id = UUID.randomUUID().toString();
         }
-    }
-
-    public boolean temCotasDisponiveis(int quantidade) {
-        return (cotasVendidas + quantidade) <= cotasTotais;
-    }
-
-    public void incrementarCotasVendidas(int quantidade) {
-        if (!temCotasDisponiveis(quantidade)) {
-            throw new IllegalStateException("Não há cotas suficientes disponíveis");
+        if (criadoEm == null) {
+            criadoEm = LocalDateTime.now();
         }
-        this.cotasVendidas += quantidade;
-    }
-
-    public void decrementarCotasVendidas(int quantidade) {
-        if (this.cotasVendidas - quantidade < 0) {
-            throw new IllegalStateException("Não é possível decrementar mais cotas do que vendidas");
+        if (cotasDisponiveis == null) {
+            cotasDisponiveis = cotasTotais - cotasVendidas;
         }
-        this.cotasVendidas -= quantidade;
     }
 
-    public Integer getCotasDisponiveis() {
-        return cotasTotais - cotasVendidas;
+    @PreUpdate
+    protected void onUpdate() {
+        if (cotasDisponiveis == null) {
+            cotasDisponiveis = cotasTotais - cotasVendidas;
+        }
     }
 }

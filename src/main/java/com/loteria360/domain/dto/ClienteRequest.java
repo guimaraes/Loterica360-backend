@@ -10,10 +10,10 @@ public class ClienteRequest {
     @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
     private String nome;
     
-    @Pattern(regexp = "^\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}$", message = "CPF deve ter o formato XXX.XXX.XXX-XX")
+    @Pattern(regexp = "^(\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}|\\d{11})$", message = "CPF deve ter 11 dígitos ou formato XXX.XXX.XXX-XX")
     private String cpf;
     
-    @Pattern(regexp = "^\\+?[1-9]\\d{1,14}$", message = "Telefone deve ter um formato válido")
+    @Pattern(regexp = "^(\\(\\d{2}\\)\\s\\d{5}-\\d{4}|\\d{10,11})$", message = "Telefone deve ter formato válido")
     private String telefone;
     
     @Email(message = "Email deve ter um formato válido")

@@ -5,12 +5,10 @@ import com.loteria360.domain.model.StatusBolao;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import jakarta.persistence.LockModeType;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -22,23 +20,23 @@ public interface BolaoRepository extends JpaRepository<Bolao, String> {
     Optional<Bolao> findByJogoIdAndConcurso(@Param("jogoId") String jogoId, @Param("concurso") String concurso);
 
     @Query("SELECT b FROM Bolao b WHERE b.status = :status")
-    Page<Bolao> findByStatus(@Param("status") StatusBolao status, Pageable pageable);
+    List<Bolao> findByStatus(@Param("status") StatusBolao status);
 
     @Query("SELECT b FROM Bolao b WHERE b.jogo.id = :jogoId AND b.status = :status")
-    Page<Bolao> findByJogoIdAndStatus(@Param("jogoId") String jogoId, @Param("status") StatusBolao status, Pageable pageable);
+    List<Bolao> findByJogoIdAndStatus(@Param("jogoId") String jogoId, @Param("status") StatusBolao status);
 
-    @Query("SELECT b FROM Bolao b WHERE b.dataSorteio BETWEEN :dataInicio AND :dataFim")
-    Page<Bolao> findByDataSorteioBetween(@Param("dataInicio") LocalDate dataInicio, 
-                                         @Param("dataFim") LocalDate dataFim, 
-                                         Pageable pageable);
+    @Query("SELECT b FROM Bolao b WHERE b.dataSorteio = :dataSorteio")
+    List<Bolao> findByDataSorteio(@Param("dataSorteio") LocalDate dataSorteio);
 
-    @Query("SELECT b FROM Bolao b WHERE b.cotasVendidas < b.cotasTotais AND b.status = 'ABERTO'")
-    List<Bolao> findBoloesComCotasDisponiveis();
+    @Query("SELECT b FROM Bolao b WHERE " +
+           "(:search IS NULL OR :search = '' OR " +
+           "LOWER(b.concurso) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(b.descricao) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(b.jogo.nome) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Bolao> findBySearchTerm(@Param("search") String search, Pageable pageable);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT b FROM Bolao b WHERE b.id = :id")
-    Optional<Bolao> findByIdWithLock(@Param("id") String id);
+    @Query("SELECT b FROM Bolao b WHERE b.status = 'ABERTO'")
+    List<Bolao> findBoloesAtivos();
 
-    @Query("SELECT b FROM Bolao b WHERE b.jogo.ativo = true AND b.status = :status")
-    Page<Bolao> findByJogoAtivoAndStatus(@Param("status") StatusBolao status, Pageable pageable);
+    long countByStatus(com.loteria360.domain.model.StatusBolao status);
 }

@@ -1,5 +1,7 @@
 package com.loteria360.service;
 
+import com.loteria360.domain.dto.AlterarSenhaRequest;
+import com.loteria360.domain.dto.AtualizarUsuarioRequest;
 import com.loteria360.domain.dto.CriarUsuarioRequest;
 import com.loteria360.domain.dto.UsuarioResponse;
 import com.loteria360.domain.model.Usuario;
@@ -75,4 +77,48 @@ public class UsuarioService {
         log.info("Usuário {} {} com sucesso", id, usuarioSalvo.getAtivo() ? "ativado" : "desativado");
         return usuarioMapper.toResponse(usuarioSalvo);
     }
+
+    public UsuarioResponse atualizarUsuario(String id, AtualizarUsuarioRequest request) {
+        log.info("Atualizando usuário: {}", id);
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        // Verificar se o email já está em uso por outro usuário (apenas se o email mudou)
+        if (!usuario.getEmail().equals(request.getEmail())) {
+            if (usuarioRepository.existsByEmail(request.getEmail())) {
+                throw new IllegalArgumentException("Email já está em uso por outro usuário");
+            }
+        }
+
+        // Atualizar os campos
+        usuario.setNome(request.getNome());
+        usuario.setEmail(request.getEmail());
+        usuario.setPapel(request.getPapel());
+        usuario.setAtivo(request.getAtivo());
+
+        Usuario usuarioSalvo = usuarioRepository.save(usuario);
+        log.info("Usuário atualizado com sucesso: {}", usuarioSalvo.getId());
+
+        return usuarioMapper.toResponse(usuarioSalvo);
+    }
+
+    public void alterarSenha(String id, AlterarSenhaRequest request) {
+        log.info("Alterando senha do usuário: {}", id);
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        // Verificar se a senha atual está correta
+        if (!passwordEncoder.matches(request.getSenhaAtual(), usuario.getSenhaHash())) {
+            throw new IllegalArgumentException("Senha atual incorreta");
+        }
+
+        // Atualizar com a nova senha
+        usuario.setSenhaHash(passwordEncoder.encode(request.getNovaSenha()));
+        usuarioRepository.save(usuario);
+
+        log.info("Senha alterada com sucesso para o usuário: {}", id);
+    }
+
 }

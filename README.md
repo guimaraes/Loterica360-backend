@@ -182,9 +182,18 @@ DB_PASSWORD=loteria
 ### Usuários
 - `GET /api/v1/usuarios` - Listar usuários (ADMIN/GERENTE)
 - `POST /api/v1/usuarios` - Criar usuário (ADMIN)
+- `PUT /api/v1/usuarios/{id}` - Atualizar usuário (ADMIN)
+- `PUT /api/v1/usuarios/{id}/senha` - Alterar senha (ADMIN)
 - `GET /api/v1/usuarios/{id}` - Buscar usuário
 - `PATCH /api/v1/usuarios/{id}/toggle-status` - Ativar/Desativar
 - `PATCH /api/v1/usuarios/{id}/status` - Ativar/Desativar (endpoint alternativo)
+
+### Clientes
+- `GET /api/v1/clientes` - Listar clientes (ADMIN/GERENTE/VENDEDOR)
+- `POST /api/v1/clientes` - Criar cliente (ADMIN/GERENTE/VENDEDOR)
+- `PUT /api/v1/clientes/{id}` - Atualizar cliente (ADMIN/GERENTE/VENDEDOR)
+- `GET /api/v1/clientes/{id}` - Buscar cliente
+- `GET /api/v1/clientes/search` - Buscar clientes por nome, CPF ou email
 
 ### Jogos
 - `GET /api/v1/jogos` - Listar jogos
@@ -211,6 +220,8 @@ DB_PASSWORD=loteria
 - `POST /api/v1/turnos/{id}/fechar` - Fechar turno
 - `GET /api/v1/turnos` - Listar turnos
 - `GET /api/v1/turnos/{id}` - Buscar turno
+- `GET /api/v1/turnos/ativo` - Buscar turno ativo do usuário logado
+- `GET /api/v1/turnos/me/ativo` - Buscar turno ativo do usuário logado (endpoint alternativo)
 
 ### Movimentos de Caixa
 - `POST /api/v1/movimentos` - Registrar sangria/suprimento

@@ -2,6 +2,7 @@ package com.loteria360.controller;
 
 import com.loteria360.domain.dto.CriarJogoRequest;
 import com.loteria360.domain.dto.JogoResponse;
+import com.loteria360.domain.dto.AtualizarJogoRequest;
 import com.loteria360.service.JogoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -17,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/jogos")
 @RequiredArgsConstructor
@@ -29,7 +32,7 @@ public class JogoController {
 
     @PostMapping
     @Operation(summary = "Criar jogo", description = "Cria um novo jogo no sistema")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'VENDEDOR')")
     public ResponseEntity<JogoResponse> criarJogo(@Valid @RequestBody CriarJogoRequest request) {
         log.info("Criando jogo: {}", request.getNome());
         JogoResponse response = jogoService.criarJogo(request);
@@ -45,11 +48,11 @@ public class JogoController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/ativos")
-    @Operation(summary = "Listar jogos ativos", description = "Lista apenas jogos ativos")
-    public ResponseEntity<Page<JogoResponse>> listarJogosAtivos(
+    @GetMapping("/ativos/paginado")
+    @Operation(summary = "Listar jogos ativos paginado", description = "Lista apenas jogos ativos com paginação")
+    public ResponseEntity<Page<JogoResponse>> listarJogosAtivosPaginado(
             @PageableDefault(size = 20) Pageable pageable) {
-        log.info("Listando jogos ativos");
+        log.info("Listando jogos ativos paginado");
         Page<JogoResponse> response = jogoService.listarJogosAtivos(pageable);
         return ResponseEntity.ok(response);
     }
@@ -62,20 +65,37 @@ public class JogoController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/codigo/{codigo}")
-    @Operation(summary = "Buscar jogo por código", description = "Retorna os dados de um jogo pelo código")
-    public ResponseEntity<JogoResponse> buscarPorCodigo(@PathVariable String codigo) {
-        log.info("Buscando jogo por código: {}", codigo);
-        JogoResponse response = jogoService.buscarPorCodigo(codigo);
+    @GetMapping("/nome/{nome}")
+    @Operation(summary = "Buscar jogo por nome", description = "Retorna os dados de um jogo pelo nome")
+    public ResponseEntity<JogoResponse> buscarPorNome(@PathVariable String nome) {
+        log.info("Buscando jogo por nome: {}", nome);
+        JogoResponse response = jogoService.buscarPorNome(nome);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Atualizar jogo", description = "Atualiza os dados de um jogo")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'VENDEDOR')")
+    public ResponseEntity<JogoResponse> atualizarJogo(@PathVariable String id, @Valid @RequestBody AtualizarJogoRequest request) {
+        log.info("Atualizando jogo: {}", id);
+        JogoResponse response = jogoService.atualizarJogo(id, request);
         return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{id}/toggle-status")
     @Operation(summary = "Ativar/Desativar jogo", description = "Alterna o status ativo/inativo de um jogo")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'VENDEDOR')")
     public ResponseEntity<JogoResponse> ativarDesativarJogo(@PathVariable String id) {
         log.info("Alterando status do jogo: {}", id);
         JogoResponse response = jogoService.ativarDesativarJogo(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/ativos")
+    @Operation(summary = "Listar jogos ativos", description = "Lista todos os jogos ativos sem paginação")
+    public ResponseEntity<List<JogoResponse>> listarJogosAtivos() {
+        log.info("Listando jogos ativos");
+        List<JogoResponse> response = jogoService.listarTodosJogosAtivos();
         return ResponseEntity.ok(response);
     }
 }

@@ -1,5 +1,7 @@
 package com.loteria360.controller;
 
+import com.loteria360.domain.dto.AlterarSenhaRequest;
+import com.loteria360.domain.dto.AtualizarUsuarioRequest;
 import com.loteria360.domain.dto.CriarUsuarioRequest;
 import com.loteria360.domain.dto.UsuarioResponse;
 import com.loteria360.domain.model.Usuario;
@@ -36,6 +38,17 @@ public class UsuarioController {
         log.info("Criando usuário: {}", request.getEmail());
         UsuarioResponse response = usuarioService.criarUsuario(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Atualizar usuário", description = "Atualiza os dados de um usuário existente")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UsuarioResponse> atualizarUsuario(
+            @PathVariable String id, 
+            @Valid @RequestBody AtualizarUsuarioRequest request) {
+        log.info("Atualizando usuário: {}", id);
+        UsuarioResponse response = usuarioService.atualizarUsuario(id, request);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
@@ -92,4 +105,16 @@ public class UsuarioController {
         UsuarioResponse response = usuarioService.buscarPorId(usuario.getId());
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping("/{id}/senha")
+    @Operation(summary = "Alterar senha", description = "Altera a senha de um usuário")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> alterarSenha(
+            @PathVariable String id, 
+            @Valid @RequestBody AlterarSenhaRequest request) {
+        log.info("Alterando senha do usuário: {}", id);
+        usuarioService.alterarSenha(id, request);
+        return ResponseEntity.ok().body("{\"message\": \"Senha alterada com sucesso\"}");
+    }
+
 }

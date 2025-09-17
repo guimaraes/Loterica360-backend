@@ -11,6 +11,7 @@ public interface JogoMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "ativo", ignore = true)
+    @Mapping(target = "criadoEm", ignore = true)
     Jogo toEntity(CriarJogoRequest request);
 
     JogoResponse toResponse(Jogo jogo);

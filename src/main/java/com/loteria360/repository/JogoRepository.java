@@ -8,18 +8,23 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface JogoRepository extends JpaRepository<Jogo, String> {
 
-    Optional<Jogo> findByCodigo(String codigo);
+    Optional<Jogo> findByNome(String nome);
 
-    boolean existsByCodigo(String codigo);
+    boolean existsByNome(String nome);
 
     @Query("SELECT j FROM Jogo j WHERE j.ativo = :ativo")
     Page<Jogo> findByAtivo(@Param("ativo") Boolean ativo, Pageable pageable);
 
     @Query("SELECT j FROM Jogo j WHERE j.nome LIKE %:nome% AND j.ativo = true")
     Page<Jogo> findByNomeContainingAndAtivo(@Param("nome") String nome, Pageable pageable);
+
+    List<Jogo> findByAtivoTrue();
+
+    long countByAtivoTrue();
 }

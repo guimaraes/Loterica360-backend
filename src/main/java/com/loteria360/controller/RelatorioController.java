@@ -1,7 +1,5 @@
 package com.loteria360.controller;
 
-import com.loteria360.domain.dto.RelatorioBoloesStatusResponse;
-import com.loteria360.domain.dto.RelatorioVendasResponse;
 import com.loteria360.service.RelatorioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,46 +26,42 @@ public class RelatorioController {
     private final RelatorioService relatorioService;
 
     @GetMapping("/vendas")
-    @Operation(summary = "Relatório de vendas", description = "Gera relatório de vendas por período")
+    @Operation(summary = "Relatório de vendas", description = "Gera relatório de vendas por jogo no período")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'AUDITOR')")
-    public ResponseEntity<RelatorioVendasResponse> relatorioVendas(
-            @Parameter(description = "Data de início (YYYY-MM-DD)")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
-            @Parameter(description = "Data de fim (YYYY-MM-DD)")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
-            @Parameter(description = "ID do vendedor (opcional)")
-            @RequestParam(required = false) String vendedorId) {
-        
-        log.info("Gerando relatório de vendas de {} até {}", de, ate);
-        RelatorioVendasResponse response = relatorioService.gerarRelatorioVendas(de, ate, vendedorId);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/boloes/status")
-    @Operation(summary = "Relatório de status dos bolões", description = "Gera relatório com status atual dos bolões")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'AUDITOR')")
-    public ResponseEntity<RelatorioBoloesStatusResponse> relatorioBoloesStatus() {
-        log.info("Gerando relatório de status dos bolões");
-        RelatorioBoloesStatusResponse response = relatorioService.gerarRelatorioBoloesStatus();
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/pagamentos")
-    @Operation(summary = "Relatório de pagamentos", description = "Gera relatório de pagamentos por método")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'AUDITOR')")
-    public ResponseEntity<Map<String, String>> relatorioPagamentos(
+    public ResponseEntity<Map<String, Object>> relatorioVendas(
             @Parameter(description = "Data de início (YYYY-MM-DD)")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
             @Parameter(description = "Data de fim (YYYY-MM-DD)")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate) {
         
-        log.info("Gerando relatório de pagamentos de {} até {}", de, ate);
-        Map<String, String> response = relatorioService.gerarRelatorioPagamentos(de, ate)
-                .entrySet().stream()
-                .collect(java.util.stream.Collectors.toMap(
-                        entry -> entry.getKey().name(),
-                        entry -> "R$ " + entry.getValue().toString()
-                ));
+        log.info("Gerando relatório de vendas de {} até {}", de, ate);
+        Map<String, Object> response = relatorioService.gerarRelatorioVendas(de, ate);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/contagem")
+    @Operation(summary = "Relatório de contagem", description = "Gera relatório de contagem de cédulas e moedas")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'AUDITOR')")
+    public ResponseEntity<Map<String, Object>> relatorioContagem(
+            @Parameter(description = "Data de início (YYYY-MM-DD)")
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
+            @Parameter(description = "Data de fim (YYYY-MM-DD)")
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate) {
+        
+        log.info("Gerando relatório de contagem de {} até {}", de, ate);
+        Map<String, Object> response = relatorioService.gerarRelatorioContagem(de, ate);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/consolidado")
+    @Operation(summary = "Relatório consolidado", description = "Gera relatório consolidado de vendas e contagem para um dia específico")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'AUDITOR')")
+    public ResponseEntity<Map<String, Object>> relatorioConsolidado(
+            @Parameter(description = "Data (YYYY-MM-DD)")
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {
+        
+        log.info("Gerando relatório consolidado para {}", data);
+        Map<String, Object> response = relatorioService.gerarRelatorioConsolidado(data);
         return ResponseEntity.ok(response);
     }
 }

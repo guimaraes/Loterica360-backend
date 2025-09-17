@@ -22,4 +22,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
 
     @Query("SELECT u FROM Usuario u WHERE u.papel = :papel AND u.ativo = true")
     Page<Usuario> findByPapelAndAtivo(@Param("papel") String papel, Pageable pageable);
+
+    long countByAtivoTrue();
 }

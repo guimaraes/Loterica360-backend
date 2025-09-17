@@ -5,19 +5,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class JogoResponse {
-    
+public class CaixaResponse {
+
     private String id;
-    private String nome;
+    private Integer numero;
     private String descricao;
-    private BigDecimal preco;
     private Boolean ativo;
     private LocalDateTime criadoEm;
 }

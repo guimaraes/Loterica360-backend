@@ -1,8 +1,10 @@
 package com.loteria360.service;
 
-import com.loteria360.domain.dto.*;
-import com.loteria360.domain.model.*;
-import com.loteria360.repository.*;
+import com.loteria360.domain.dto.VendaCaixaResponse;
+import com.loteria360.domain.dto.ContagemCaixaResponse;
+import com.loteria360.repository.VendaCaixaRepository;
+import com.loteria360.repository.ContagemCaixaRepository;
+import com.loteria360.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -13,12 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,128 +24,103 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class RelatorioService {
 
-    private final VendaRepository vendaRepository;
-    private final BolaoRepository bolaoRepository;
-    private final PagamentoRepository pagamentoRepository;
+    private final VendaCaixaRepository vendaCaixaRepository;
+    private final ContagemCaixaRepository contagemCaixaRepository;
     private final UsuarioRepository usuarioRepository;
 
-    public RelatorioVendasResponse gerarRelatorioVendas(LocalDate dataInicio, LocalDate dataFim, String vendedorId) {
+    public Map<String, Object> gerarRelatorioVendas(LocalDate dataInicio, LocalDate dataFim) {
         log.info("Gerando relatório de vendas de {} até {}", dataInicio, dataFim);
 
-        LocalDateTime inicio = dataInicio.atStartOfDay();
-        LocalDateTime fim = dataFim.atTime(LocalTime.MAX);
+        Map<String, Object> relatorio = new HashMap<>();
 
-        Page<Venda> vendas;
-        if (vendedorId != null) {
-            vendas = vendaRepository.findByUsuarioIdAndDataVendaBetween(vendedorId, inicio, fim, PageRequest.of(0, 1000));
-        } else {
-            vendas = vendaRepository.findByDataVendaBetween(inicio, fim, PageRequest.of(0, 1000));
+        // Total de vendas por jogo no período
+        Map<String, Long> vendasPorJogo = new HashMap<>();
+        Map<String, BigDecimal> valorPorJogo = new HashMap<>();
+
+        Pageable pageable = PageRequest.of(0, 1000); // Buscar todas as vendas
+        Page<VendaCaixaResponse> vendas = vendaCaixaRepository.findByDataVendaBetween(dataInicio, dataFim, pageable)
+                .map(venda -> VendaCaixaResponse.builder()
+                        .id(venda.getId())
+                        .caixaId(venda.getCaixa().getId())
+                        .numeroCaixa(venda.getCaixa().getNumero())
+                        .jogoId(venda.getJogo().getId())
+                        .nomeJogo(venda.getJogo().getNome())
+                        .quantidade(venda.getQuantidade())
+                        .valorTotal(venda.getValorTotal())
+                        .dataVenda(venda.getDataVenda())
+                        .build());
+
+        for (VendaCaixaResponse venda : vendas.getContent()) {
+            vendasPorJogo.merge(venda.getNomeJogo(), (long) venda.getQuantidade(), Long::sum);
+            valorPorJogo.merge(venda.getNomeJogo(), venda.getValorTotal(), BigDecimal::add);
         }
 
-        String vendedorNome = null;
-        if (vendedorId != null) {
-            vendedorNome = usuarioRepository.findById(vendedorId)
-                    .map(Usuario::getNome)
-                    .orElse("Usuário não encontrado");
+        relatorio.put("periodo", Map.of(
+                "dataInicio", dataInicio.toString(),
+                "dataFim", dataFim.toString()
+        ));
+        relatorio.put("vendasPorJogo", vendasPorJogo);
+        relatorio.put("valorPorJogo", valorPorJogo);
+        relatorio.put("totalVendas", vendas.getTotalElements());
+        relatorio.put("valorTotal", valorPorJogo.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add));
+
+        return relatorio;
+    }
+
+    public Map<String, Object> gerarRelatorioContagem(LocalDate dataInicio, LocalDate dataFim) {
+        log.info("Gerando relatório de contagem de {} até {}", dataInicio, dataFim);
+
+        Map<String, Object> relatorio = new HashMap<>();
+
+        Pageable pageable = PageRequest.of(0, 1000);
+        Page<ContagemCaixaResponse> contagens = contagemCaixaRepository.findByDataContagemBetween(dataInicio, dataFim, pageable)
+                .map(contagem -> ContagemCaixaResponse.builder()
+                        .id(contagem.getId())
+                        .caixaId(contagem.getCaixa().getId())
+                        .numeroCaixa(contagem.getCaixa().getNumero())
+                        .dataContagem(contagem.getDataContagem())
+                        .totalNotas(contagem.getTotalNotas())
+                        .totalMoedas(contagem.getTotalMoedas())
+                        .totalGeral(contagem.getTotalGeral())
+                        .build());
+
+        BigDecimal totalNotas = BigDecimal.ZERO;
+        BigDecimal totalMoedas = BigDecimal.ZERO;
+        BigDecimal totalGeral = BigDecimal.ZERO;
+
+        for (ContagemCaixaResponse contagem : contagens.getContent()) {
+            totalNotas = totalNotas.add(contagem.getTotalNotas());
+            totalMoedas = totalMoedas.add(contagem.getTotalMoedas());
+            totalGeral = totalGeral.add(contagem.getTotalGeral());
         }
 
-        BigDecimal totalVendas = vendas.getContent().stream()
-                .filter(v -> v.getStatus() == StatusVenda.CONCLUIDA)
-                .map(Venda::getValorTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        relatorio.put("periodo", Map.of(
+                "dataInicio", dataInicio.toString(),
+                "dataFim", dataFim.toString()
+        ));
+        relatorio.put("totalContagens", contagens.getTotalElements());
+        relatorio.put("totalNotas", totalNotas);
+        relatorio.put("totalMoedas", totalMoedas);
+        relatorio.put("totalGeral", totalGeral);
 
-        BigDecimal totalComissoes = BigDecimal.ZERO; // TODO: Implementar cálculo de comissões
-
-        int totalVendasCount = (int) vendas.getContent().stream()
-                .filter(v -> v.getStatus() == StatusVenda.CONCLUIDA)
-                .count();
-
-        int totalVendasCanceladas = (int) vendas.getContent().stream()
-                .filter(v -> v.getStatus() == StatusVenda.CANCELADA)
-                .count();
-
-        List<RelatorioVendasResponse.VendaResumoResponse> vendasResumo = vendas.getContent().stream()
-                .map(v -> RelatorioVendasResponse.VendaResumoResponse.builder()
-                        .id(v.getId())
-                        .tipo(v.getTipoVenda().name())
-                        .valorLiquido(v.getValorTotal())
-                        .status(v.getStatus().name())
-                        .criadoEm(v.getDataVenda().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-                        .build())
-                .collect(Collectors.toList());
-
-        return RelatorioVendasResponse.builder()
-                .dataInicio(dataInicio)
-                .dataFim(dataFim)
-                .vendedorId(vendedorId)
-                .vendedorNome(vendedorNome)
-                .totalVendas(totalVendas)
-                .totalComissoes(totalComissoes)
-                .totalVendasCount(totalVendasCount)
-                .totalVendasCanceladas(totalVendasCanceladas)
-                .vendas(vendasResumo)
-                .build();
+        return relatorio;
     }
 
-    public RelatorioBoloesStatusResponse gerarRelatorioBoloesStatus() {
-        log.info("Gerando relatório de status dos bolões");
+    public Map<String, Object> gerarRelatorioConsolidado(LocalDate data) {
+        log.info("Gerando relatório consolidado para {}", data);
 
-        List<Bolao> boloes = bolaoRepository.findAll();
+        Map<String, Object> relatorio = new HashMap<>();
 
-        int totalBoloes = boloes.size();
-        int boloesAbertos = (int) boloes.stream().filter(b -> b.getStatus() == StatusBolao.ABERTO).count();
-        int boloesEncerrados = (int) boloes.stream().filter(b -> b.getStatus() == StatusBolao.ENCERRADO).count();
-        int boloesCancelados = (int) boloes.stream().filter(b -> b.getStatus() == StatusBolao.CANCELADO).count();
+        // Relatório de vendas do dia
+        Map<String, Object> vendas = gerarRelatorioVendas(data, data);
+        
+        // Relatório de contagem do dia
+        Map<String, Object> contagem = gerarRelatorioContagem(data, data);
 
-        int totalCotas = boloes.stream().mapToInt(Bolao::getCotasTotais).sum();
-        int cotasVendidas = boloes.stream().mapToInt(Bolao::getCotasVendidas).sum();
-        int cotasDisponiveis = totalCotas - cotasVendidas;
+        relatorio.put("data", data.toString());
+        relatorio.put("vendas", vendas);
+        relatorio.put("contagem", contagem);
 
-        List<RelatorioBoloesStatusResponse.BolaoStatusResponse> boloesStatus = boloes.stream()
-                .map(b -> {
-                    double percentualVendido = b.getCotasTotais() > 0 ? 
-                            (double) b.getCotasVendidas() / b.getCotasTotais() * 100 : 0.0;
-                    
-                    return RelatorioBoloesStatusResponse.BolaoStatusResponse.builder()
-                            .id(b.getId())
-                            .jogoNome(b.getJogo().getNome())
-                            .concurso(b.getConcurso())
-                            .cotasTotais(b.getCotasTotais())
-                            .cotasVendidas(b.getCotasVendidas())
-                            .cotasDisponiveis(b.getCotasDisponiveis())
-                            .status(b.getStatus().name())
-                            .percentualVendido(String.format("%.1f%%", percentualVendido))
-                            .build();
-                })
-                .collect(Collectors.toList());
-
-        return RelatorioBoloesStatusResponse.builder()
-                .totalBoloes(totalBoloes)
-                .boloesAbertos(boloesAbertos)
-                .boloesEncerrados(boloesEncerrados)
-                .boloesCancelados(boloesCancelados)
-                .totalCotas(totalCotas)
-                .cotasVendidas(cotasVendidas)
-                .cotasDisponiveis(cotasDisponiveis)
-                .boloes(boloesStatus)
-                .build();
-    }
-
-    public Map<MetodoPagamento, BigDecimal> gerarRelatorioPagamentos(LocalDate dataInicio, LocalDate dataFim) {
-        log.info("Gerando relatório de pagamentos de {} até {}", dataInicio, dataFim);
-
-        LocalDateTime inicio = dataInicio.atStartOfDay();
-        LocalDateTime fim = dataFim.atTime(LocalTime.MAX);
-
-        List<Venda> vendas = vendaRepository.findByDataVendaBetween(inicio, fim, PageRequest.of(0, 1000)).getContent();
-
-        return vendas.stream()
-                .filter(v -> v.getStatus() == StatusVenda.CONCLUIDA)
-                .flatMap(v -> v.getPagamentos().stream())
-                .filter(p -> p.getStatus() == StatusPagamento.APROVADO)
-                .collect(Collectors.groupingBy(
-                        Pagamento::getMetodoPagamento,
-                        Collectors.reducing(BigDecimal.ZERO, Pagamento::getValor, BigDecimal::add)
-                ));
+        return relatorio;
     }
 }
