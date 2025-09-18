@@ -67,7 +67,7 @@ flowchart LR
   API --> AOP["AuditAspect (AOP)"]
   API --> LOG["Logback + MDC traceId"]
 ```
-## 🛠 Tecnologias & Dependências
+## Tecnologias & Dependências
 
 - **Linguagem**: Java 17
 - **Framework**: Spring Boot 3.3.0 (Web, Validation, Security, Actuator)
