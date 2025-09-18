@@ -1,650 +1,454 @@
-# 🎰 Loteria360 Backend
+# Loteria360 — Backend (Spring Boot)
 
-Sistema de gestão completo para casas lotéricas, desenvolvido em Spring Boot com arquitetura moderna e robusta.
+Sistema de gestão completo para **casas lotéricas** com foco em **operações de caixa**, **vendas de jogos**, **bolões**, **clientes**, **relatórios** e **dashboard**. Projeto baseado em **Spring Boot 3.3.0** e **Java 17**, com segurança **JWT**, migrações **Flyway** e documentação **OpenAPI/Swagger**.
 
-## 📋 **Índice**
-
-- [Visão Geral](#-visão-geral)
-- [Tecnologias](#-tecnologias)
-- [Arquitetura](#-arquitetura)
-- [Estrutura do Projeto](#-estrutura-do-projeto)
-- [Domínio e Entidades](#-domínio-e-entidades)
-- [API e Endpoints](#-api-e-endpoints)
-- [Segurança e Autenticação](#-segurança-e-autenticação)
-- [Configuração e Deploy](#-configuração-e-deploy)
-- [Desenvolvimento](#-desenvolvimento)
-- [Documentação da API](#-documentação-da-api)
-
-## 🎯 **Visão Geral**
-
-O **Loteria360 Backend** é uma API RESTful robusta desenvolvida para gerenciar todas as operações de uma casa lotérica, incluindo:
-
-- **Gestão de Usuários**: Sistema de perfis (Admin, Gerente, Vendedor, Auditor)
-- **Gestão de Jogos**: Cadastro e controle de jogos de loteria
-- **Gestão de Bolões**: Criação e gerenciamento de bolões
-- **Gestão de Vendas**: Controle de vendas por caixa e jogo
-- **Gestão de Caixas**: Controle de caixas e contagem de dinheiro
-- **Gestão de Clientes**: Cadastro e controle de clientes
-- **Relatórios**: Dashboard e relatórios gerenciais
-- **Auditoria**: Rastreamento completo de operações
-
-## 🛠️ **Tecnologias**
-
-### **Backend Stack**
-- **Java 17** - Linguagem principal
-- **Spring Boot 3.3.0** - Framework principal
-- **Spring Security** - Autenticação e autorização
-- **Spring Data JPA** - Persistência de dados
-- **Spring AOP** - Programação orientada a aspectos
-- **MySQL 8** - Banco de dados
-- **Flyway** - Migração de banco de dados
-- **JWT** - Autenticação stateless
-- **MapStruct** - Mapeamento de objetos
-- **Lombok** - Redução de boilerplate
-- **OpenAPI/Swagger** - Documentação da API
-
-### **Ferramentas de Desenvolvimento**
-- **Maven** - Gerenciamento de dependências
-- **Docker** - Containerização
-- **Testcontainers** - Testes de integração
-- **Logback** - Sistema de logs
-- **Jackson** - Serialização JSON
-
-## 🏗️ **Arquitetura**
-
-### **Padrão Arquitetural**
-O projeto segue o padrão **Clean Architecture** com separação clara de responsabilidades:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Presentation Layer                      │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
-│  │   Controllers   │  │   DTOs/Request  │  │   Responses  │ │
-│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-┌─────────────────────────────────────────────────────────────┐
-│                     Business Layer                         │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
-│  │    Services     │  │   Mappers       │  │  Validation  │ │
-│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-┌─────────────────────────────────────────────────────────────┐
-│                   Persistence Layer                        │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
-│  │   Repositories  │  │   Entities      │  │   Database   │ │
-│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### **Camadas da Aplicação**
-
-1. **Controller Layer** - Endpoints REST e validação de entrada
-2. **Service Layer** - Lógica de negócio e orquestração
-3. **Repository Layer** - Acesso a dados e queries
-4. **Entity Layer** - Modelo de domínio e persistência
-5. **Security Layer** - Autenticação e autorização
-6. **Configuration Layer** - Configurações da aplicação
-
-## 📁 **Estrutura do Projeto**
-
-```
-src/main/java/com/loteria360/
-├── Loteria360Application.java          # Classe principal
-├── audit/                              # Sistema de auditoria
-│   ├── Auditable.java                  # Interface para auditoria
-│   ├── AuditAspect.java                # Aspect para auditoria
-│   └── AuditService.java               # Serviço de auditoria
-├── config/                             # Configurações
-│   ├── GlobalExceptionHandler.java     # Tratamento global de erros
-│   ├── JacksonConfig.java              # Configuração JSON
-│   ├── OpenApiConfig.java              # Configuração Swagger
-│   ├── SecurityConfig.java             # Configuração de segurança
-│   └── TraceIdFilter.java              # Filtro de trace ID
-├── controller/                         # Controllers REST
-│   ├── AuthController.java             # Autenticação
-│   ├── BolaoController.java            # Gestão de bolões
-│   ├── CaixaController.java            # Gestão de caixas
-│   ├── ClienteController.java          # Gestão de clientes
-│   ├── ContagemCaixaController.java    # Contagem de caixas
-│   ├── DashboardController.java        # Dashboard e relatórios
-│   ├── JogoController.java             # Gestão de jogos
-│   ├── RelatorioController.java        # Relatórios
-│   ├── UsuarioController.java          # Gestão de usuários
-│   └── VendaCaixaController.java       # Gestão de vendas
-├── domain/                             # Camada de domínio
-│   ├── dto/                            # Data Transfer Objects
-│   ├── mapper/                         # Mappers MapStruct
-│   └── model/                          # Entidades JPA
-├── exception/                          # Exceptions customizadas
-│   ├── BusinessException.java          # Exception de negócio
-│   ├── ResourceNotFoundException.java  # Recurso não encontrado
-│   └── ValidationException.java        # Exception de validação
-├── repository/                         # Repositories JPA
-├── security/                           # Segurança
-│   ├── CurrentUser.java                # Anotação para usuário atual
-│   ├── CurrentUserArgumentResolver.java # Resolver de usuário atual
-│   ├── JwtAuthFilter.java              # Filtro JWT
-│   ├── JwtService.java                 # Serviço JWT
-│   └── UsuarioDetailsService.java      # UserDetailsService
-├── service/                            # Serviços de negócio
-└── util/                               # Utilitários
-    └── PasswordGeneratorUtil.java      # Gerador de senhas
-```
-
-## 🗄️ **Domínio e Entidades**
-
-### **Entidades Principais**
-
-#### **👤 Usuario**
-```java
-@Entity
-@Table(name = "usuario")
-public class Usuario {
-    private String id;                    // UUID
-    private String nome;                  // Nome completo
-    private String email;                 // Email único
-    private String senhaHash;             // Hash da senha
-    private PapelUsuario papel;           // ADMIN, GERENTE, VENDEDOR, AUDITOR
-    private Boolean ativo;                // Status ativo/inativo
-    private LocalDateTime criadoEm;       // Data de criação
-}
-```
-
-#### **🎮 Jogo**
-```java
-@Entity
-@Table(name = "jogo")
-public class Jogo {
-    private String id;                    // UUID
-    private String nome;                  // Nome do jogo
-    private String descricao;             // Descrição
-    private BigDecimal preco;             // Preço por aposta
-    private Boolean ativo;                // Status ativo/inativo
-    private LocalDateTime criadoEm;       // Data de criação
-}
-```
-
-#### **👥 Cliente**
-```java
-@Entity
-@Table(name = "cliente")
-public class Cliente {
-    private String id;                    // UUID
-    private String nome;                  // Nome completo
-    private String cpf;                   // CPF único
-    private String telefone;              // Telefone
-    private String email;                 // Email
-    private Boolean consentimentoLgpd;    // Consentimento LGPD
-    private LocalDateTime criadoEm;       // Data de criação
-}
-```
-
-#### **🎯 Bolao**
-```java
-@Entity
-@Table(name = "bolao")
-public class Bolao {
-    private String id;                    // UUID
-    private Jogo jogo;                    // Jogo relacionado
-    private String concurso;              // Número do concurso
-    private String descricao;             // Descrição
-    private Integer cotasTotais;          // Total de cotas
-    private Integer cotasVendidas;        // Cotas vendidas
-    private Integer cotasDisponiveis;     // Cotas disponíveis
-    private BigDecimal valorCota;         // Valor por cota
-    private LocalDate dataSorteio;        // Data do sorteio
-    private StatusBolao status;           // ABERTO, ENCERRADO, CANCELADO
-    private LocalDateTime criadoEm;       // Data de criação
-}
-```
-
-#### **💰 Caixa**
-```java
-@Entity
-@Table(name = "caixa")
-public class Caixa {
-    private String id;                    // UUID
-    private Integer numero;               // Número único
-    private String descricao;             // Descrição
-    private Boolean ativo;                // Status ativo/inativo
-    private LocalDateTime criadoEm;       // Data de criação
-}
-```
-
-#### **📊 VendaCaixa**
-```java
-@Entity
-@Table(name = "venda_caixa")
-public class VendaCaixa {
-    private String id;                    // UUID
-    private Caixa caixa;                  // Caixa relacionado
-    private Jogo jogo;                    // Jogo relacionado
-    private Integer quantidade;           // Quantidade vendida
-    private BigDecimal valorTotal;        // Valor total
-    private LocalDate dataVenda;          // Data da venda
-    private Usuario usuario;              // Usuário que vendeu
-    private LocalDateTime criadoEm;       // Data de criação
-}
-```
-
-#### **💵 ContagemCaixa**
-```java
-@Entity
-@Table(name = "contagem_caixa")
-public class ContagemCaixa {
-    private String id;                    // UUID
-    private Caixa caixa;                  // Caixa relacionado
-    private LocalDate dataContagem;       // Data da contagem
-    private Usuario usuario;              // Usuário responsável
-    
-    // Notas
-    private Integer notas200, notas100, notas50, notas20, notas10, notas5, notas2;
-    
-    // Moedas
-    private Integer moedas1, moedas050, moedas025, moedas010, moedas005;
-    
-    // Totais calculados
-    private BigDecimal totalNotas;        // Total em notas
-    private BigDecimal totalMoedas;       // Total em moedas
-    private BigDecimal totalGeral;        // Total geral
-    private LocalDateTime criadoEm;       // Data de criação
-}
-```
-
-#### **📝 Auditoria**
-```java
-@Entity
-@Table(name = "auditoria")
-public class Auditoria {
-    private String id;                    // UUID
-    private String tabela;                // Nome da tabela
-    private String registroId;            // ID do registro
-    private AcaoAuditoria acao;           // INSERT, UPDATE, DELETE
-    private String antesJson;             // Dados anteriores (JSON)
-    private String depoisJson;            // Dados novos (JSON)
-    private Usuario usuario;              // Usuário responsável
-    private LocalDateTime criadoEm;       // Data da operação
-}
-```
-
-### **Enums e Tipos**
-
-#### **PapelUsuario**
-- `ADMIN` - Administrador completo
-- `GERENTE` - Gerente operacional
-- `VENDEDOR` - Vendedor
-- `AUDITOR` - Auditor/Visualizador
-
-#### **StatusBolao**
-- `ABERTO` - Bolão aberto para vendas
-- `ENCERRADO` - Bolão encerrado
-- `CANCELADO` - Bolão cancelado
-
-#### **AcaoAuditoria**
-- `INSERT` - Inserção de registro
-- `UPDATE` - Atualização de registro
-- `DELETE` - Exclusão de registro
-
-## 🔌 **API e Endpoints**
-
-### **Autenticação**
-```
-POST /api/v1/auth/login              # Login e obtenção de token
-GET  /api/v1/auth/me                 # Dados do usuário atual
-POST /api/v1/auth/logout             # Logout
-POST /api/v1/auth/refresh            # Renovar token
-```
-
-### **Usuários**
-```
-POST   /api/v1/usuarios              # Criar usuário (ADMIN)
-GET    /api/v1/usuarios              # Listar usuários (ADMIN/GERENTE)
-GET    /api/v1/usuarios/{id}         # Buscar usuário (ADMIN/GERENTE)
-PUT    /api/v1/usuarios/{id}         # Atualizar usuário (ADMIN)
-DELETE /api/v1/usuarios/{id}         # Excluir usuário (ADMIN)
-POST   /api/v1/usuarios/{id}/senha   # Alterar senha (ADMIN)
-```
-
-### **Jogos**
-```
-POST   /api/v1/jogos                 # Criar jogo (ADMIN/GERENTE)
-GET    /api/v1/jogos                 # Listar jogos (todos)
-GET    /api/v1/jogos/ativos          # Listar jogos ativos (todos)
-GET    /api/v1/jogos/{id}            # Buscar jogo (todos)
-PUT    /api/v1/jogos/{id}            # Atualizar jogo (ADMIN/GERENTE)
-DELETE /api/v1/jogos/{id}            # Excluir jogo (ADMIN/GERENTE)
-PUT    /api/v1/jogos/{id}/toggle     # Ativar/desativar jogo (ADMIN/GERENTE)
-```
-
-### **Bolões**
-```
-POST   /api/v1/boloes                # Criar bolão (ADMIN/GERENTE)
-GET    /api/v1/boloes                # Listar bolões (todos)
-GET    /api/v1/boloes/ativos         # Listar bolões ativos (todos)
-GET    /api/v1/boloes/{id}           # Buscar bolão (todos)
-PUT    /api/v1/boloes/{id}           # Atualizar bolão (ADMIN/GERENTE)
-DELETE /api/v1/boloes/{id}           # Excluir bolão (ADMIN/GERENTE)
-PUT    /api/v1/boloes/{id}/status    # Alterar status (ADMIN/GERENTE)
-```
-
-### **Caixas**
-```
-POST   /api/v1/caixas                # Criar caixa (ADMIN/GERENTE)
-GET    /api/v1/caixas                # Listar caixas (ADMIN/GERENTE)
-GET    /api/v1/caixas/ativas         # Listar caixas ativas (todos)
-GET    /api/v1/caixas/{id}           # Buscar caixa (ADMIN/GERENTE)
-PUT    /api/v1/caixas/{id}           # Atualizar caixa (ADMIN/GERENTE)
-PUT    /api/v1/caixas/{id}/toggle    # Ativar/desativar caixa (todos)
-```
-
-### **Vendas**
-```
-POST   /api/v1/vendas-caixa          # Registrar venda (ADMIN/GERENTE/VENDEDOR)
-GET    /api/v1/vendas-caixa          # Listar vendas (ADMIN/GERENTE)
-GET    /api/v1/vendas-caixa/{id}     # Buscar venda (ADMIN/GERENTE)
-PUT    /api/v1/vendas-caixa/{id}     # Atualizar venda (ADMIN/GERENTE)
-DELETE /api/v1/vendas-caixa/{id}     # Excluir venda (ADMIN/GERENTE)
-```
-
-### **Contagem de Caixa**
-```
-POST   /api/v1/contagem-caixa        # Registrar contagem (ADMIN/GERENTE/VENDEDOR)
-GET    /api/v1/contagem-caixa        # Listar contagens (ADMIN/GERENTE)
-GET    /api/v1/contagem-caixa/{id}   # Buscar contagem (ADMIN/GERENTE)
-PUT    /api/v1/contagem-caixa/{id}   # Atualizar contagem (ADMIN/GERENTE)
-DELETE /api/v1/contagem-caixa/{id}   # Excluir contagem (ADMIN/GERENTE)
-```
-
-### **Clientes**
-```
-POST   /api/v1/clientes              # Criar cliente (ADMIN/GERENTE/VENDEDOR)
-GET    /api/v1/clientes              # Listar clientes (ADMIN/GERENTE/VENDEDOR/AUDITOR)
-GET    /api/v1/clientes/{id}         # Buscar cliente (ADMIN/GERENTE/VENDEDOR/AUDITOR)
-PUT    /api/v1/clientes/{id}         # Atualizar cliente (ADMIN/GERENTE/VENDEDOR)
-DELETE /api/v1/clientes/{id}         # Excluir cliente (ADMIN/GERENTE)
-```
-
-### **Dashboard e Relatórios**
-```
-GET    /api/v1/dashboard             # Dashboard principal (ADMIN/GERENTE/AUDITOR)
-GET    /api/v1/dashboard/metricas    # Métricas gerais (ADMIN/GERENTE/AUDITOR)
-GET    /api/v1/dashboard/vendas      # Vendas por período (ADMIN/GERENTE/AUDITOR)
-GET    /api/v1/dashboard/caixas      # Status dos caixas (ADMIN/GERENTE/AUDITOR)
-GET    /api/v1/relatorios/vendas     # Relatório de vendas (ADMIN/GERENTE/AUDITOR)
-GET    /api/v1/relatorios/financeiro # Relatório financeiro (ADMIN/GERENTE/AUDITOR)
-```
-
-## 🔐 **Segurança e Autenticação**
-
-### **Autenticação JWT**
-- **Stateless**: Não mantém sessão no servidor
-- **Token Expiration**: 24 horas por padrão
-- **Refresh Token**: Renovação automática
-- **Bearer Token**: Autenticação via header Authorization
-
-### **Autorização por Perfis**
-
-#### **🔴 ADMIN**
-- Acesso completo a todos os recursos
-- Gestão de usuários
-- Configurações do sistema
-- Todos os relatórios
-
-#### **🟡 GERENTE**
-- Gestão de jogos, bolões e caixas
-- Gestão de vendas e contagens
-- Relatórios operacionais
-- **Não pode**: Gerenciar usuários
-
-#### **🟢 VENDEDOR**
-- Apenas tela de vendas
-- Acesso a clientes (para vendas)
-- Visualização de jogos ativos
-- Contagem de caixa
-- **Não pode**: Criar/editar jogos, bolões, usuários
-
-#### **🔵 AUDITOR**
-- Apenas visualização
-- Relatórios e dashboard
-- Consulta de dados
-- **Não pode**: Modificar dados
-
-### **Tratamento de Erros**
-Sistema robusto de tratamento de erros com mensagens amigáveis:
-
-```json
-{
-  "type": "https://loteria360.com/errors/validation-failed",
-  "title": "Dados Inválidos",
-  "status": 400,
-  "detail": "Por favor, verifique os dados informados",
-  "errors": [
-    {
-      "field": "nome",
-      "message": "Nome é obrigatório",
-      "rejectedValue": null
-    }
-  ],
-  "timestamp": "2024-01-15T10:30:15"
-}
-```
-
-## ⚙️ **Configuração e Deploy**
-
-### **Variáveis de Ambiente**
-```bash
-# Banco de Dados
-DB_URL=jdbc:mysql://localhost:3306/loteria360
-DB_USERNAME=loteria
-DB_PASSWORD=loteria
-
-# JWT
-JWT_SECRET=your-secret-key-here
-JWT_EXPIRATION=86400000
-
-# CORS
-CORS_ALLOWED_ORIGINS=http://localhost:3000
-```
-
-### **Docker Compose**
-```yaml
-version: '3.8'
-services:
-  mysql:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: loteria360
-      MYSQL_USER: loteria
-      MYSQL_PASSWORD: loteria
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-
-  app:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - DB_URL=jdbc:mysql://mysql:3306/loteria360
-    depends_on:
-      - mysql
-
-volumes:
-  mysql_data:
-```
-
-## 🚀 **Desenvolvimento**
-
-### **Pré-requisitos**
-- Java 17+
-- Maven 3.6+
-- MySQL 8.0+
-- Docker (opcional)
-
-### **Configuração Local**
-```bash
-# 1. Clone o repositório
-git clone <repository-url>
-cd loteria360-backend
-
-# 2. Configure o banco de dados
-# Crie o banco 'loteria360' no MySQL
-# Configure as credenciais em application-dev.yml
-
-# 3. Execute as migrações
-mvn flyway:migrate
-
-# 4. Execute a aplicação
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
-```
-
-### **Comandos Úteis**
-```bash
-# Executar testes
-mvn test
-
-# Executar testes de integração
-mvn verify
-
-# Gerar documentação
-mvn javadoc:javadoc
-
-# Limpar e compilar
-mvn clean compile
-
-# Executar com perfil específico
-mvn spring-boot:run -Dspring-boot.run.profiles=test
-```
-
-## 📚 **Documentação da API**
-
-### **Swagger UI**
-Acesse a documentação interativa da API em:
-- **Local**: http://localhost:8080/swagger-ui.html
-- **Produção**: https://api.loteria360.com/swagger-ui.html
-
-### **OpenAPI Specification**
-- **JSON**: http://localhost:8080/v3/api-docs
-- **YAML**: http://localhost:8080/v3/api-docs.yaml
-
-### **Exemplos de Uso**
-
-#### **Login**
-```bash
-curl -X POST http://localhost:8080/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@loteria360.local",
-    "password": "123456"
-  }'
-```
-
-#### **Criar Jogo**
-```bash
-curl -X POST http://localhost:8080/api/v1/jogos \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <token>" \
-  -d '{
-    "nome": "Mega Sena",
-    "descricao": "Loteria com 60 números",
-    "preco": 4.50
-  }'
-```
-
-#### **Registrar Venda**
-```bash
-curl -X POST http://localhost:8080/api/v1/vendas-caixa \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <token>" \
-  -d '{
-    "caixaId": "caixa-id",
-    "jogoId": "jogo-id",
-    "quantidade": 10,
-    "dataVenda": "2024-01-15"
-  }'
-```
-
-## 📊 **Monitoramento e Logs**
-
-### **Logs Estruturados**
-```json
-{
-  "timestamp": "2024-01-15T10:30:15.123Z",
-  "level": "INFO",
-  "logger": "com.loteria360.service.UsuarioService",
-  "message": "Usuário criado com sucesso: user-123",
-  "traceId": "abc123def456",
-  "spanId": "def456ghi789"
-}
-```
-
-### **Métricas de Aplicação**
-- **Health Check**: `/actuator/health`
-- **Info**: `/actuator/info`
-- **Metrics**: `/actuator/metrics`
-
-### **Auditoria**
-Todas as operações são auditadas automaticamente:
-- **Usuário**: Quem fez a operação
-- **Timestamp**: Quando foi feita
-- **Operação**: INSERT, UPDATE, DELETE
-- **Dados**: Antes e depois (JSON)
-
-## 🔧 **Manutenção**
-
-### **Backup do Banco**
-```bash
-# Backup completo
-mysqldump -u loteria -p loteria360 > backup_$(date +%Y%m%d_%H%M%S).sql
-
-# Backup apenas dados
-mysqldump -u loteria -p --no-create-info loteria360 > data_backup.sql
-```
-
-### **Limpeza de Logs**
-```bash
-# Limpar logs antigos (manter últimos 30 dias)
-find logs/ -name "*.log" -mtime +30 -delete
-```
-
-### **Atualização de Dependências**
-```bash
-# Verificar atualizações
-mvn versions:display-dependency-updates
-
-# Atualizar dependências
-mvn versions:use-latest-versions
-```
-
-## 🤝 **Contribuição**
-
-### **Padrões de Código**
-- **Java**: Google Java Style Guide
-- **Commits**: Conventional Commits
-- **Branches**: Git Flow
-- **PRs**: Sempre com testes e documentação
-
-### **Processo de Contribuição**
-1. Fork o projeto
-2. Crie uma branch para sua feature
-3. Implemente com testes
-4. Submeta um Pull Request
-5. Aguarde review e aprovação
-
-## 📄 **Licença**
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-## 📞 **Suporte**
-
-Para suporte e dúvidas:
-- **Email**: suporte@loteria360.com
-- **Documentação**: https://docs.loteria360.com
-- **Issues**: GitHub Issues
+> Este README foi gerado a partir da análise do repositório fornecido, cobrindo tecnologias, estrutura, endpoints, regras de negócio e instruções de execução.
 
 ---
 
-**Loteria360 Backend** - Sistema robusto e escalável para gestão de casas lotéricas 🎰
+## Sumário
+- [Visão Geral](#-visão-geral)
+- [Principais Funcionalidades](#-principais-funcionalidades)
+- [Arquitetura & Padrões](#-arquitetura--padrões)
+- [Tecnologias & Dependências](#-tecnologias--dependências)
+- [Estrutura do Projeto](#-estrutura-do-projeto)
+- [Modelo de Domínio](#-modelo-de-domínio)
+- [Segurança & Autorização](#-segurança--autorização)
+- [API & Endpoints](#-api--endpoints)
+- [Regras de Negócio (Resumo)](#-regras-de-negócio-resumo)
+- [Erros & Tratamento Global](#-erros--tratamento-global)
+- [Banco de Dados & Migrações](#-banco-de-dados--migrações)
+- [Como Executar (Local, Docker, Testes)](#-como-executar-local-docker-testes)
+- [Observabilidade & Logs](#-observabilidade--logs)
+- [Roadmap / Próximos Passos](#-roadmap--próximos-passos)
+- [Licença](#-licença)
+
+---
+## Visão Geral
+
+O **Loteria360 Backend** fornece uma API REST para gerir o dia a dia de uma casa lotérica:
+
+- Cadastro e gestão de **Usuários** (perfis: `ADMIN`, `GERENTE`, `VENDEDOR`, `AUDITOR`).
+- **Autenticação** via JWT e proteção de rotas por perfil.
+- Cadastro de **Jogos** e **Bolões** (com controle de cotas).
+- Fluxos de **Caixa** (abertura/encerramento/turno), **Vendas**, **Contagens** e **Relatórios**.
+- **Dashboard** com métricas de vendas, séries temporais e resumos.
+- **Auditoria** automática de operações críticas.
+
+A API é auto-documentada via **OpenAPI/Swagger** e exposta em `/swagger-ui.html`.
+
+---
+## Principais Funcionalidades
+- **Usuários**: CRUD, ativação/desativação, troca de senha, perfil e status.
+- **Autenticação**: login que retorna **JWT** (Bearer).
+- **Jogos**: cadastro, ativação/desativação, listagem paginada/ativas.
+- **Bolões**: cadastro, controle de cotas (totais/vendidas/disponíveis), status (`ABERTO`, `ENCERRADO`, `CANCELADO`).
+- **Clientes**: cadastro, consulta por CPF/e-mail/nome, consentimento LGPD (quando aplicável).
+- **Caixas**: abertura de turno, lançamentos e contagens de caixa, pagamentos, cancelamentos.
+- **Vendas**: registro de vendas por jogo/bolão, métodos de pagamento, status de venda.
+- **Relatórios**: vendas, contagens e consolidado por períodos.
+- **Dashboard**: métricas agregadas, sumários e tendências (últimos _N_ dias).
+- **Auditoria**: AOP para registrar ações em entidades críticas.
+
+---
+
+## Arquitetura & Padrões
+- **Camadas**: `controller` → `service` → `repository` (+ `mapper`/`dto`).
+- **Spring MVC** com validação (`jakarta.validation`) e **DTOs**.
+- **Segurança**: Spring Security + filtro `JwtAuthFilter` (stateless).
+- **AOP de Auditoria**: `AuditAspect` registra operações (tabela, id, ação, usuário/hora).
+- **Migrations** com **Flyway** (`db/migration`).
+- **Documentação**: `springdoc-openapi`.
+- **Configuração** por perfis (`application.yml`, `application-dev.yml`, `application-test.yml`).
+
+Diagrama resumido (Mermaid):
+
+```mermaid
+flowchart LR
+  UI[Frontend / Postman] --> API[Spring Boot API]
+  API --> SEC[Spring Security (JWT)]
+  API --> CTL[Controllers]
+  CTL --> SRV[Services]
+  SRV --> REPO[Repositories (Spring Data JPA)]
+  REPO --> DB[(MySQL 8)]
+  SRV --> MAP[MapStruct]
+  API --> SWG[Swagger / OpenAPI]
+  API --> AOP[AOP - AuditAspect]
+  API --> LOG[Logback + MDC traceId]
+```
+
+---
+## Tecnologias & Dependências
+
+- **Linguagem**: Java 17
+- **Framework**: Spring Boot 3.3.0 (Web, Validation, Security, Actuator)
+- **Persistência**: Spring Data JPA + MySQL 8
+- **Migrações**: Flyway
+- **Auth**: JWT (jjwt-api/impl/jackson)
+- **Documentação**: springdoc-openapi-starter-webmvc-ui
+- **Mapeamento**: MapStruct
+- **Boilerplate**: Lombok
+- **Build**: Maven (mvnw)
+- **Testes**: JUnit 5, Testcontainers (perfil `test`)
+- **Container**: Dockerfile multi-stage + `docker-compose.yml` (MySQL + Adminer)
+- **Logs**: Logback JSON (MDC `traceId` via `TraceIdFilter`)
+
+---
+## Estrutura do Projeto (alto nível)
+
+```
+Loterica360-backend/
+├─ docker/                 # Infra local (MySQL/Adminer)
+├─ src/
+│  ├─ main/java/com/loteria360/
+│  │  ├─ controller/      # REST controllers
+│  │  ├─ service/         # Regras de negócio
+│  │  ├─ repository/      # Spring Data JPA repos
+│  │  ├─ domain/
+│  │  │  ├─ model/        # Entidades JPA (Usuario, Jogo, Bolao, ...)
+│  │  │  ├─ dto/          # DTOs de request/response
+│  │  │  └─ mapper/       # MapStruct mappers
+│  │  ├─ security/        # JWT, filtros e detalhes do usuário
+│  │  ├─ config/          # SecurityConfig, OpenAPI, Jackson, ExceptionHandler...
+│  │  ├─ audit/           # AuditAspect e serviço de auditoria
+│  │  └─ util/            # utilitários (ex.: PasswordGeneratorUtil)
+│  └─ main/resources/
+│     ├─ application.yml / application-dev.yml / application-test.yml
+│     ├─ db/migration/    # Flyway (V1__baseline.sql, V2__seed_data.sql, ...)
+│     └─ logback-spring.xml
+├─ Dockerfile
+├─ docker-compose.yml
+├─ Makefile
+└─ pom.xml
+```
+---
+## Modelo de Domínio
+
+**Entidades (principais)**:  
+AcaoAuditoria, Auditoria, Bolao, Caixa, Cliente, ComissaoRegra, ContagemCaixa, EscopoComissao, Jogo, MetodoPagamento, PapelUsuario, StatusBolao, StatusPagamento, StatusTurno, StatusVenda, TipoMovimentoCaixa, TipoVenda, Usuario, VendaCaixa
+
+**DTOs** (amostra):  
+AbrirTurnoRequest, AlterarSenhaRequest, AtualizarBolaoRequest, AtualizarJogoRequest, AtualizarUsuarioRequest, BolaoResponse, CaixaRequest, CaixaResponse, CancelarVendaRequest, ClienteRequest, ClienteResponse, ContagemCaixaRequest, ContagemCaixaResponse, CriarBolaoRequest, CriarJogoRequest, CriarUsuarioRequest, JogoResponse, LoginRequest, LoginResponse, MovimentoCaixaRequest...
+
+Diagrama ER (simplificado):
+
+```mermaid
+erDiagram
+  USUARIO ||--o{ CAIXA : "operado por"
+  USUARIO {
+    string id PK
+    string nome
+    string email UK
+    string senha_hash
+    enum   papel  "ADMIN|GERENTE|VENDEDOR|AUDITOR"
+    bool   ativo
+    time   criado_em
+  }
+
+  JOGO ||--o{ VENDA_CAIXA : "vendido em"
+  JOGO {
+    string id PK
+    string nome
+    string descricao
+    decimal valor_base
+    bool   ativo
+    time   criado_em
+  }
+
+  CLIENTE ||--o{ VENDA_CAIXA : "realiza"
+  CLIENTE {
+    string id PK
+    string nome
+    string cpf UK
+    string email UK
+    string telefone
+    bool   consentimento_lgpd
+    time   criado_em
+  }
+
+  CAIXA ||--o{ VENDA_CAIXA : "registra"
+  CAIXA ||--o{ CONTAGEM_CAIXA : "movimenta"
+  CAIXA {
+    string id PK
+    string descricao
+    enum   status_turno "ABERTO|FECHADO"
+    bool   ativo
+    time   criado_em
+  }
+
+  VENDA_CAIXA {
+    string id PK
+    string caixa_id FK
+    string jogo_id  FK
+    string cliente_id FK
+    enum   status_venda "CONCLUIDA|CANCELADA"
+    enum   metodo_pagamento
+    decimal valor_total
+    date   data_venda
+  }
+
+  BOLAO ||--o{ VENDA_CAIXA : "venda por cota"
+  BOLAO {
+    string id PK
+    string jogo_id FK
+    string concurso
+    int    cotas_totais
+    int    cotas_vendidas
+    int    cotas_disponiveis
+    decimal valor_cota
+    date   data_sorteio
+    enum   status "ABERTO|ENCERRADO|CANCELADO"
+  }
+
+  CONTAGEM_CAIXA {
+    string id PK
+    string caixa_id FK
+    date   data_contagem
+    decimal valor_declarado
+    decimal valor_calculado
+    decimal diferenca
+  }
+
+  AUDITORIA {
+    string id PK
+    string tabela
+    string registro_id
+    string acao "CREATE|UPDATE|DELETE"
+    string usuario
+    time   timestamp
+  }
+```
+
+> Observação: os campos exatos podem variar conforme a implementação; veja os scripts em `db/migration` para a fonte da verdade.
+
+---
+## Segurança & Autorização
+
+- **JWT Bearer** via `Authorization: Bearer <token>`
+- **Filtro**: `JwtAuthFilter` popula o contexto de segurança.
+- **Perfis / Papéis** (`PapelUsuario`): `ADMIN`, `GERENTE`, `VENDEDOR`, `AUDITOR`.
+- **Restrições** adicionais via `@PreAuthorize` nos controllers.
+- **Resolução de Usuário Atual**: `@CurrentUser`/`CurrentUserArgumentResolver`.
+
+**Rotas públicas (tipicamente):**
+- `POST /api/v1/auth/login`
+- `GET /swagger-ui.html`, `GET /v3/api-docs/**`
+- `GET /actuator/health` (se exposto)
+
+Variáveis recomendadas (via `application.yml` ou `ENV`):
+```yaml
+app:
+  jwt:
+    secret: "troque-por-uma-chave-base64-de-256-bits"
+    expiration: 86400000   # 24h em ms
+```
+
+> Use `PasswordGeneratorUtil` para gerar **hashes BCrypt** de senhas seguras.
+
+---
+## API & Endpoints
+
+Abaixo um inventário **gerado** a partir dos controllers:
+
+| Método | Caminho | Handler |
+|---|---|---|
+| `POST` | `/api/v1/auth/login` | `AuthController.login()` |
+| `POST` | `/api/v1/auth/logout` | `AuthController.logout()` |
+| `GET` | `/api/v1/auth/me` | `AuthController.getCurrentUser()` |
+| `GET` | `/api/v1/boloes` | `BolaoController.listarBoloes()` |
+| `POST` | `/api/v1/boloes` | `BolaoController.criarBolao()` |
+| `GET` | `/api/v1/boloes/ativos` | `BolaoController.listarBoloesAtivos()` |
+| `DELETE` | `/api/v1/boloes/{id}` | `BolaoController.deletarBolao()` |
+| `GET` | `/api/v1/boloes/{id}` | `BolaoController.buscarBolaoPorId()` |
+| `PUT` | `/api/v1/boloes/{id}` | `BolaoController.atualizarBolao()` |
+| `PATCH` | `/api/v1/boloes/{id}/toggle-status` | `BolaoController.alterarStatusBolao()` |
+| `GET` | `/api/v1/caixas` | `CaixaController.listarCaixas()` |
+| `POST` | `/api/v1/caixas` | `CaixaController.criarCaixa()` |
+| `GET` | `/api/v1/caixas/ativas` | `CaixaController.listarCaixasAtivas()` |
+| `GET` | `/api/v1/caixas/{id}` | `CaixaController.buscarPorId()` |
+| `PUT` | `/api/v1/caixas/{id}` | `CaixaController.atualizarCaixa()` |
+| `GET` | `/api/v1/clientes` | `ClienteController.listarClientes()` |
+| `POST` | `/api/v1/clientes` | `ClienteController.criarCliente()` |
+| `GET` | `/api/v1/clientes/search` | `ClienteController.buscarClientes()` |
+| `GET` | `/api/v1/clientes/{id}` | `ClienteController.buscarPorId()` |
+| `PUT` | `/api/v1/clientes/{id}` | `ClienteController.atualizarCliente()` |
+| `GET` | `/api/v1/contagem-caixa` | `ContagemCaixaController.listarContagens()` |
+| `POST` | `/api/v1/contagem-caixa` | `ContagemCaixaController.registrarContagem()` |
+| `GET` | `/api/v1/contagem-caixa/periodo` | `ContagemCaixaController.listarContagensPorPeriodo()` |
+| `DELETE` | `/api/v1/contagem-caixa/{id}` | `ContagemCaixaController.excluirContagem()` |
+| `GET` | `/api/v1/contagem-caixa/{id}` | `ContagemCaixaController.buscarPorId()` |
+| `GET` | `/api/v1/dashboard/boloes-summary` | `DashboardController.getBoloesSummary()` |
+| `GET` | `/api/v1/dashboard/metrics` | `DashboardController.getDashboardMetrics()` |
+| `GET` | `/api/v1/dashboard/monthly-comparison` | `DashboardController.getMonthlyComparison()` |
+| `GET` | `/api/v1/dashboard/performance-analysis` | `DashboardController.getPerformanceAnalysis()` |
+| `GET` | `/api/v1/dashboard/recent-activity` | `DashboardController.getRecentActivity()` |
+| `GET` | `/api/v1/dashboard/sales-summary` | `DashboardController.getSalesSummary()` |
+| `GET` | `/api/v1/dashboard/trend-analysis` | `DashboardController.getTrendAnalysis()` |
+| `GET` | `/api/v1/dashboard/yearly-comparison` | `DashboardController.getYearlyComparison()` |
+| `GET` | `/api/v1/jogos` | `JogoController.listarJogos()` |
+| `POST` | `/api/v1/jogos` | `JogoController.criarJogo()` |
+| `GET` | `/api/v1/jogos/ativos` | `JogoController.listarJogosAtivos()` |
+| `GET` | `/api/v1/jogos/ativos/paginado` | `JogoController.listarJogosAtivosPaginado()` |
+| `GET` | `/api/v1/jogos/nome/{nome}` | `JogoController.buscarPorNome()` |
+| `GET` | `/api/v1/jogos/{id}` | `JogoController.buscarPorId()` |
+| `PUT` | `/api/v1/jogos/{id}` | `JogoController.atualizarJogo()` |
+| `PATCH` | `/api/v1/jogos/{id}/toggle-status` | `JogoController.ativarDesativarJogo()` |
+| `GET` | `/api/v1/relatorios/consolidado` | `RelatorioController.relatorioConsolidado()` |
+| `GET` | `/api/v1/relatorios/contagem` | `RelatorioController.relatorioContagem()` |
+| `GET` | `/api/v1/relatorios/vendas` | `RelatorioController.relatorioVendas()` |
+| `GET` | `/api/v1/usuarios` | `UsuarioController.listarUsuarios()` |
+| `POST` | `/api/v1/usuarios` | `UsuarioController.criarUsuario()` |
+| `GET` | `/api/v1/usuarios/ativos` | `UsuarioController.listarUsuariosAtivos()` |
+| `GET` | `/api/v1/usuarios/me` | `UsuarioController.dadosUsuarioLogado()` |
+| `GET` | `/api/v1/usuarios/{id}` | `UsuarioController.buscarPorId()` |
+| `PUT` | `/api/v1/usuarios/{id}` | `UsuarioController.atualizarUsuario()` |
+| `PUT` | `/api/v1/usuarios/{id}/senha` | `UsuarioController.alterarSenha()` |
+| `PATCH` | `/api/v1/usuarios/{id}/status` | `UsuarioController.alterarStatusUsuario()` |
+| `PATCH` | `/api/v1/usuarios/{id}/toggle-status` | `UsuarioController.ativarDesativarUsuario()` |
+| `GET` | `/api/v1/vendas-caixa` | `VendaCaixaController.listarVendas()` |
+| `POST` | `/api/v1/vendas-caixa` | `VendaCaixaController.registrarVenda()` |
+| `GET` | `/api/v1/vendas-caixa/periodo` | `VendaCaixaController.listarVendasPorPeriodo()` |
+| `DELETE` | `/api/v1/vendas-caixa/{id}` | `VendaCaixaController.excluirVenda()` |
+| `GET` | `/api/v1/vendas-caixa/{id}` | `VendaCaixaController.buscarPorId()` |
+
+> Para contratos completos (schemas, exemplos, códigos), acesse **Swagger** em `/swagger-ui.html` com a aplicação em execução.
+
+**Exemplos (curl)**:
+
+```bash
+# Login
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@loteria360.local","senha":"<sua-senha>"}'
+
+# Listar jogos (com token)
+curl http://localhost:8080/api/v1/jogos \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+---
+## Regras de Negócio (Resumo)
+
+> Extraído dos modelos, serviços e controllers presentes no repositório.
+
+- **Usuários**
+  - Perfis distintos controlam o acesso a endpoints e ações administrativas.
+  - Ativação/Desativação e troca de senha disponíveis via endpoints dedicados.
+
+- **Jogos**
+  - Cadastro com **status de atividade**; listagens de ativos e busca por nome/id.
+  - Atualização e _toggle_ de status.
+
+- **Bolões**
+  - Constraint única por `(jogo_id, concurso)`.
+  - Controle de **cotas** (totais, vendidas, disponíveis) e **status** (aberto/encerrado/cancelado).
+  - Vendas não devem exceder `cotas_disponiveis` (regra comum nessa modelagem).
+
+- **Caixas & Turnos**
+  - Abertura de turno, lançamentos/vendas e **contagens** por período.
+  - Encerramento com balanço (diferença entre declarado x calculado).
+
+- **Vendas**
+  - Estados **CONCLUIDA** e **CANCELADA**; suporte a **métodos de pagamento**.
+  - Vínculo com `Jogo` e opcionalmente `Bolao`/`Cliente`.
+
+- **Relatórios/Dashboard**
+  - Métricas consolidadas (total de usuários, jogos, clientes, caixas, bolões).
+  - Resumos de vendas por período e análises de tendência (últimos _N_ dias).
+
+- **Auditoria**
+  - `AuditAspect` captura ações e persiste na tabela de auditoria.
+
+---
+## Erros & Tratamento Global
+
+- `GlobalExceptionHandler` centraliza tratamento com respostas JSON padronizadas.
+- Cobertura para **validação**, **credenciais inválidas**, **acesso negado**, **recurso não encontrado**, **erros de negócio** etc.
+- Padrão de resposta (exemplo):
+
+```json
+{
+  "status": 400,
+  "erro": "ValidationException",
+  "mensagem": "Campo X é obrigatório",
+  "timestamp": "2025-09-18T12:00:00",
+  "detalhes": [ "... " ]
+}
+```
+
+---
+## Banco de Dados & Migrações
+
+- Banco local: **MySQL 8**
+- Migrações: `src/main/resources/db/migration/`  
+  - **V1__baseline.sql**: criação de tabelas (usuário, jogo, cliente, venda_caixa, caixa, contagem_caixa, auditoria, índices…)
+  - **V2__seed_data.sql**: _seed_ opcional com usuários e dados iniciais
+  - **V3__test_data.sql**: dados de teste
+  - **V4__create_bolao_table.sql**: entidade **Bolão**
+
+> Perfil `test`: usa **Testcontainers** com MySQL efêmero e `ddl-auto=create-drop`.
+
+---
+## Como Executar (Local, Docker, Testes)
+
+### 1) Dependências
+- **Java 17+**, **Maven 3.9+**, **Docker** e **Docker Compose**
+
+### 2) Subir Infra Local (MySQL + Adminer)
+```bash
+docker compose up -d
+# MySQL: localhost:3306 (db: loteria360 / user: loteria / pwd: loteria)
+# Adminer: http://localhost:8081  (Server: mysql, User: loteria, Pass: loteria, DB: loteria360)
+```
+
+### 3) Rodar a Aplicação (perfil dev)
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+# ou usando Makefile
+make setup      # sobe docker e roda
+make run        # só roda (se DB já estiver de pé)
+```
+
+### 4) Documentação & Saúde
+- Swagger: <http://localhost:8080/swagger-ui.html>
+- Actuator (se habilitado): <http://localhost:8080/actuator/health>
+
+### 5) Build & Testes
+```bash
+./mvnw clean install
+./mvnw test
+```
+
+### 6) Docker Image
+```bash
+docker build -t loteria360-backend .
+docker run -p 8080:8080 --env-file .env loteria360-backend
+```
+
+> **JWT**: defina `APP_JWT_SECRET`/`app.jwt.secret` e `app.jwt.expiration` via **ENV** ou **YAML** antes de produção.
+
+---
+## Observabilidade & Logs
+
+- **Logback** configurado para **JSON** no perfil `dev` (veja `logback-spring.xml`).
+- **TraceId** por requisição via `TraceIdFilter` (propagado em header `X-Trace-Id` e em `MDC`).
+- Logging detalhado de SQL pode ser habilitado (atenção em produção).
+
+Exemplo de MDC:
+```json
+{ "traceId": "e6c15e83-...", "application":"loteria360-backend", "environment":"dev" }
+```
+
+---
+## Roadmap / Próximos Passos (sugestões)
+- Cobrir 100% dos endpoints com exemplos no Swagger (schemas DTO completos).
+- Políticas de **CORS** por ambiente.
+- Hardening de segurança (rate limiting, senhas fortes, rotação de chaves JWT).
+- Métricas com Micrometer/Prometheus + Dashboards (Grafana).
+- Testes de contrato (Spring Cloud Contract / RestAssured).
+- Pipelines CI/CD (build, testes, SAST, container scan, deploy).
+
+---
+
+## Licença
+Projeto configurado com licença **MIT** no `OpenApiConfig`. Ajuste conforme necessidade organizacional.
