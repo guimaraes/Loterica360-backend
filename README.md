@@ -53,32 +53,21 @@ A API é auto-documentada via **OpenAPI/Swagger** e exposta em `/swagger-ui.html
 ---
 
 ## Arquitetura & Padrões
-- **Camadas**: `controller` → `service` → `repository` (+ `mapper`/`dto`).
-- **Spring MVC** com validação (`jakarta.validation`) e **DTOs**.
-- **Segurança**: Spring Security + filtro `JwtAuthFilter` (stateless).
-- **AOP de Auditoria**: `AuditAspect` registra operações (tabela, id, ação, usuário/hora).
-- **Migrations** com **Flyway** (`db/migration`).
-- **Documentação**: `springdoc-openapi`.
-- **Configuração** por perfis (`application.yml`, `application-dev.yml`, `application-test.yml`).
-
-Diagrama resumido (Mermaid):
 
 ```mermaid
 flowchart LR
-  UI[Frontend / Postman] --> API[Spring Boot API]
-  API --> SEC[Spring Security (JWT)]
-  API --> CTL[Controllers]
-  CTL --> SRV[Services]
-  SRV --> REPO[Repositories (Spring Data JPA)]
-  REPO --> DB[(MySQL 8)]
-  SRV --> MAP[MapStruct]
-  API --> SWG[Swagger / OpenAPI]
-  API --> AOP[AOP - AuditAspect]
-  API --> LOG[Logback + MDC traceId]
+  UI["Frontend / Postman"] --> API["Spring Boot API"]
+  API --> SEC["Spring Security (JWT)"]
+  API --> CTL["Controllers"]
+  CTL --> SRV["Services"]
+  SRV --> REPO["Repositories (Spring Data JPA)"]
+  REPO --> DB[("Database: MySQL 8")]
+  SRV --> MAP["MapStruct"]
+  API --> SWG["Swagger & OpenAPI"]
+  API --> AOP["AuditAspect (AOP)"]
+  API --> LOG["Logback + MDC traceId"]
 ```
-
----
-## Tecnologias & Dependências
+## 🛠 Tecnologias & Dependências
 
 - **Linguagem**: Java 17
 - **Framework**: Spring Boot 3.3.0 (Web, Validation, Security, Actuator)
@@ -90,35 +79,19 @@ flowchart LR
 - **Boilerplate**: Lombok
 - **Build**: Maven (mvnw)
 - **Testes**: JUnit 5, Testcontainers (perfil `test`)
-- **Container**: Dockerfile multi-stage + `docker-compose.yml` (MySQL + Adminer)
+- **Container**: Dockerfile multi-stage + `docker-compose.yml`
 - **Logs**: Logback JSON (MDC `traceId` via `TraceIdFilter`)
 
 ---
 ## Estrutura do Projeto (alto nível)
 
 ```
-Loterica360-backend/
-├─ docker/                 # Infra local (MySQL/Adminer)
+<repo-root>/
 ├─ src/
-│  ├─ main/java/com/loteria360/
-│  │  ├─ controller/      # REST controllers
-│  │  ├─ service/         # Regras de negócio
-│  │  ├─ repository/      # Spring Data JPA repos
-│  │  ├─ domain/
-│  │  │  ├─ model/        # Entidades JPA (Usuario, Jogo, Bolao, ...)
-│  │  │  ├─ dto/          # DTOs de request/response
-│  │  │  └─ mapper/       # MapStruct mappers
-│  │  ├─ security/        # JWT, filtros e detalhes do usuário
-│  │  ├─ config/          # SecurityConfig, OpenAPI, Jackson, ExceptionHandler...
-│  │  ├─ audit/           # AuditAspect e serviço de auditoria
-│  │  └─ util/            # utilitários (ex.: PasswordGeneratorUtil)
-│  └─ main/resources/
-│     ├─ application.yml / application-dev.yml / application-test.yml
-│     ├─ db/migration/    # Flyway (V1__baseline.sql, V2__seed_data.sql, ...)
-│     └─ logback-spring.xml
+│  ├─ main/java/...(controllers, services, repositories, domain/...)
+│  └─ main/resources/ (application.yml, db/migration, logback-spring.xml)
 ├─ Dockerfile
 ├─ docker-compose.yml
-├─ Makefile
 └─ pom.xml
 ```
 ---
@@ -252,64 +225,64 @@ Abaixo um inventário **gerado** a partir dos controllers:
 
 | Método | Caminho | Handler |
 |---|---|---|
-| `POST` | `/api/v1/auth/login` | `AuthController.login()` |
-| `POST` | `/api/v1/auth/logout` | `AuthController.logout()` |
-| `GET` | `/api/v1/auth/me` | `AuthController.getCurrentUser()` |
-| `GET` | `/api/v1/boloes` | `BolaoController.listarBoloes()` |
-| `POST` | `/api/v1/boloes` | `BolaoController.criarBolao()` |
-| `GET` | `/api/v1/boloes/ativos` | `BolaoController.listarBoloesAtivos()` |
-| `DELETE` | `/api/v1/boloes/{id}` | `BolaoController.deletarBolao()` |
-| `GET` | `/api/v1/boloes/{id}` | `BolaoController.buscarBolaoPorId()` |
-| `PUT` | `/api/v1/boloes/{id}` | `BolaoController.atualizarBolao()` |
-| `PATCH` | `/api/v1/boloes/{id}/toggle-status` | `BolaoController.alterarStatusBolao()` |
-| `GET` | `/api/v1/caixas` | `CaixaController.listarCaixas()` |
-| `POST` | `/api/v1/caixas` | `CaixaController.criarCaixa()` |
-| `GET` | `/api/v1/caixas/ativas` | `CaixaController.listarCaixasAtivas()` |
-| `GET` | `/api/v1/caixas/{id}` | `CaixaController.buscarPorId()` |
-| `PUT` | `/api/v1/caixas/{id}` | `CaixaController.atualizarCaixa()` |
-| `GET` | `/api/v1/clientes` | `ClienteController.listarClientes()` |
-| `POST` | `/api/v1/clientes` | `ClienteController.criarCliente()` |
-| `GET` | `/api/v1/clientes/search` | `ClienteController.buscarClientes()` |
-| `GET` | `/api/v1/clientes/{id}` | `ClienteController.buscarPorId()` |
-| `PUT` | `/api/v1/clientes/{id}` | `ClienteController.atualizarCliente()` |
-| `GET` | `/api/v1/contagem-caixa` | `ContagemCaixaController.listarContagens()` |
-| `POST` | `/api/v1/contagem-caixa` | `ContagemCaixaController.registrarContagem()` |
-| `GET` | `/api/v1/contagem-caixa/periodo` | `ContagemCaixaController.listarContagensPorPeriodo()` |
-| `DELETE` | `/api/v1/contagem-caixa/{id}` | `ContagemCaixaController.excluirContagem()` |
-| `GET` | `/api/v1/contagem-caixa/{id}` | `ContagemCaixaController.buscarPorId()` |
-| `GET` | `/api/v1/dashboard/boloes-summary` | `DashboardController.getBoloesSummary()` |
-| `GET` | `/api/v1/dashboard/metrics` | `DashboardController.getDashboardMetrics()` |
-| `GET` | `/api/v1/dashboard/monthly-comparison` | `DashboardController.getMonthlyComparison()` |
-| `GET` | `/api/v1/dashboard/performance-analysis` | `DashboardController.getPerformanceAnalysis()` |
-| `GET` | `/api/v1/dashboard/recent-activity` | `DashboardController.getRecentActivity()` |
-| `GET` | `/api/v1/dashboard/sales-summary` | `DashboardController.getSalesSummary()` |
-| `GET` | `/api/v1/dashboard/trend-analysis` | `DashboardController.getTrendAnalysis()` |
-| `GET` | `/api/v1/dashboard/yearly-comparison` | `DashboardController.getYearlyComparison()` |
-| `GET` | `/api/v1/jogos` | `JogoController.listarJogos()` |
-| `POST` | `/api/v1/jogos` | `JogoController.criarJogo()` |
-| `GET` | `/api/v1/jogos/ativos` | `JogoController.listarJogosAtivos()` |
-| `GET` | `/api/v1/jogos/ativos/paginado` | `JogoController.listarJogosAtivosPaginado()` |
-| `GET` | `/api/v1/jogos/nome/{nome}` | `JogoController.buscarPorNome()` |
-| `GET` | `/api/v1/jogos/{id}` | `JogoController.buscarPorId()` |
-| `PUT` | `/api/v1/jogos/{id}` | `JogoController.atualizarJogo()` |
-| `PATCH` | `/api/v1/jogos/{id}/toggle-status` | `JogoController.ativarDesativarJogo()` |
-| `GET` | `/api/v1/relatorios/consolidado` | `RelatorioController.relatorioConsolidado()` |
-| `GET` | `/api/v1/relatorios/contagem` | `RelatorioController.relatorioContagem()` |
-| `GET` | `/api/v1/relatorios/vendas` | `RelatorioController.relatorioVendas()` |
-| `GET` | `/api/v1/usuarios` | `UsuarioController.listarUsuarios()` |
-| `POST` | `/api/v1/usuarios` | `UsuarioController.criarUsuario()` |
-| `GET` | `/api/v1/usuarios/ativos` | `UsuarioController.listarUsuariosAtivos()` |
-| `GET` | `/api/v1/usuarios/me` | `UsuarioController.dadosUsuarioLogado()` |
-| `GET` | `/api/v1/usuarios/{id}` | `UsuarioController.buscarPorId()` |
-| `PUT` | `/api/v1/usuarios/{id}` | `UsuarioController.atualizarUsuario()` |
-| `PUT` | `/api/v1/usuarios/{id}/senha` | `UsuarioController.alterarSenha()` |
-| `PATCH` | `/api/v1/usuarios/{id}/status` | `UsuarioController.alterarStatusUsuario()` |
-| `PATCH` | `/api/v1/usuarios/{id}/toggle-status` | `UsuarioController.ativarDesativarUsuario()` |
-| `GET` | `/api/v1/vendas-caixa` | `VendaCaixaController.listarVendas()` |
-| `POST` | `/api/v1/vendas-caixa` | `VendaCaixaController.registrarVenda()` |
-| `GET` | `/api/v1/vendas-caixa/periodo` | `VendaCaixaController.listarVendasPorPeriodo()` |
-| `DELETE` | `/api/v1/vendas-caixa/{id}` | `VendaCaixaController.excluirVenda()` |
-| `GET` | `/api/v1/vendas-caixa/{id}` | `VendaCaixaController.buscarPorId()` |
+| `GET` | `/` | `AuthController.getCurrentUser()` |
+| `POST` | `/` | `AuthController.login()` |
+| `POST` | `/` | `AuthController.logout()` |
+| `DELETE` | `/` | `BolaoController.deletarBolao()` |
+| `GET` | `/` | `BolaoController.listarBoloes()` |
+| `GET` | `/` | `BolaoController.listarBoloesAtivos()` |
+| `GET` | `/` | `BolaoController.buscarBolaoPorId()` |
+| `PATCH` | `/` | `BolaoController.alterarStatusBolao()` |
+| `POST` | `/` | `BolaoController.criarBolao()` |
+| `PUT` | `/` | `BolaoController.atualizarBolao()` |
+| `GET` | `/` | `CaixaController.listarCaixas()` |
+| `GET` | `/` | `CaixaController.buscarPorId()` |
+| `GET` | `/` | `CaixaController.listarCaixasAtivas()` |
+| `POST` | `/` | `CaixaController.criarCaixa()` |
+| `PUT` | `/` | `CaixaController.atualizarCaixa()` |
+| `GET` | `/` | `ClienteController.listarClientes()` |
+| `GET` | `/` | `ClienteController.buscarPorId()` |
+| `GET` | `/` | `ClienteController.buscarClientes()` |
+| `POST` | `/` | `ClienteController.criarCliente()` |
+| `PUT` | `/` | `ClienteController.atualizarCliente()` |
+| `DELETE` | `/` | `ContagemCaixaController.excluirContagem()` |
+| `GET` | `/` | `ContagemCaixaController.listarContagens()` |
+| `GET` | `/` | `ContagemCaixaController.listarContagensPorPeriodo()` |
+| `GET` | `/` | `ContagemCaixaController.buscarPorId()` |
+| `POST` | `/` | `ContagemCaixaController.registrarContagem()` |
+| `GET` | `/` | `DashboardController.getDashboardMetrics()` |
+| `GET` | `/` | `DashboardController.getSalesSummary()` |
+| `GET` | `/` | `DashboardController.getBoloesSummary()` |
+| `GET` | `/` | `DashboardController.getRecentActivity()` |
+| `GET` | `/` | `DashboardController.getPerformanceAnalysis()` |
+| `GET` | `/` | `DashboardController.getMonthlyComparison()` |
+| `GET` | `/` | `DashboardController.getYearlyComparison()` |
+| `GET` | `/` | `DashboardController.getTrendAnalysis()` |
+| `GET` | `/` | `JogoController.listarJogos()` |
+| `GET` | `/` | `JogoController.listarJogosAtivosPaginado()` |
+| `GET` | `/` | `JogoController.buscarPorId()` |
+| `GET` | `/` | `JogoController.buscarPorNome()` |
+| `GET` | `/` | `JogoController.listarJogosAtivos()` |
+| `PATCH` | `/` | `JogoController.ativarDesativarJogo()` |
+| `POST` | `/` | `JogoController.criarJogo()` |
+| `PUT` | `/` | `JogoController.atualizarJogo()` |
+| `GET` | `/` | `RelatorioController.relatorioVendas()` |
+| `GET` | `/` | `RelatorioController.relatorioContagem()` |
+| `GET` | `/` | `RelatorioController.relatorioConsolidado()` |
+| `GET` | `/` | `UsuarioController.listarUsuarios()` |
+| `GET` | `/` | `UsuarioController.listarUsuariosAtivos()` |
+| `GET` | `/` | `UsuarioController.buscarPorId()` |
+| `GET` | `/` | `UsuarioController.dadosUsuarioLogado()` |
+| `PATCH` | `/` | `UsuarioController.ativarDesativarUsuario()` |
+| `PATCH` | `/` | `UsuarioController.alterarStatusUsuario()` |
+| `POST` | `/` | `UsuarioController.criarUsuario()` |
+| `PUT` | `/` | `UsuarioController.atualizarUsuario()` |
+| `PUT` | `/` | `UsuarioController.alterarSenha()` |
+| `DELETE` | `/` | `VendaCaixaController.excluirVenda()` |
+| `GET` | `/` | `VendaCaixaController.listarVendas()` |
+| `GET` | `/` | `VendaCaixaController.listarVendasPorPeriodo()` |
+| `GET` | `/` | `VendaCaixaController.buscarPorId()` |
+| `POST` | `/` | `VendaCaixaController.registrarVenda()` |
 
 > Para contratos completos (schemas, exemplos, códigos), acesse **Swagger** em `/swagger-ui.html` com a aplicação em execução.
 
@@ -342,7 +315,7 @@ curl http://localhost:8080/api/v1/jogos \
 - **Bolões**
   - Constraint única por `(jogo_id, concurso)`.
   - Controle de **cotas** (totais, vendidas, disponíveis) e **status** (aberto/encerrado/cancelado).
-  - Vendas não devem exceder `cotas_disponiveis` (regra comum nessa modelagem).
+  - Vendas não devem exceder `cotas_disponiveis`.
 
 - **Caixas & Turnos**
   - Abertura de turno, lançamentos/vendas e **contagens** por período.
@@ -381,12 +354,12 @@ curl http://localhost:8080/api/v1/jogos \
 
 - Banco local: **MySQL 8**
 - Migrações: `src/main/resources/db/migration/`  
-  - **V1__baseline.sql**: criação de tabelas (usuário, jogo, cliente, venda_caixa, caixa, contagem_caixa, auditoria, índices…)
-  - **V2__seed_data.sql**: _seed_ opcional com usuários e dados iniciais
+  - **V1__baseline.sql**: criação de tabelas iniciais
+  - **V2__seed_data.sql**: dados seed (opcional)
   - **V3__test_data.sql**: dados de teste
   - **V4__create_bolao_table.sql**: entidade **Bolão**
 
-> Perfil `test`: usa **Testcontainers** com MySQL efêmero e `ddl-auto=create-drop`.
+> Perfil `test`: pode usar **Testcontainers** com banco efêmero.
 
 ---
 ## Como Executar (Local, Docker, Testes)
@@ -394,19 +367,15 @@ curl http://localhost:8080/api/v1/jogos \
 ### 1) Dependências
 - **Java 17+**, **Maven 3.9+**, **Docker** e **Docker Compose**
 
-### 2) Subir Infra Local (MySQL + Adminer)
+### 2) Subir Infra Local (Banco + UI opcional)
 ```bash
 docker compose up -d
-# MySQL: localhost:3306 (db: loteria360 / user: loteria / pwd: loteria)
-# Adminer: http://localhost:8081  (Server: mysql, User: loteria, Pass: loteria, DB: loteria360)
+# Acesse o banco conforme docker-compose (host/porta/usuario/senha/db)
 ```
 
 ### 3) Rodar a Aplicação (perfil dev)
 ```bash
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
-# ou usando Makefile
-make setup      # sobe docker e roda
-make run        # só roda (se DB já estiver de pé)
 ```
 
 ### 4) Documentação & Saúde
@@ -428,7 +397,7 @@ docker run -p 8080:8080 --env-file .env loteria360-backend
 > **JWT**: defina `APP_JWT_SECRET`/`app.jwt.secret` e `app.jwt.expiration` via **ENV** ou **YAML** antes de produção.
 
 ---
-## Observabilidade & Logs
+## 📊 Observabilidade & Logs
 
 - **Logback** configurado para **JSON** no perfil `dev` (veja `logback-spring.xml`).
 - **TraceId** por requisição via `TraceIdFilter` (propagado em header `X-Trace-Id` e em `MDC`).
@@ -451,4 +420,4 @@ Exemplo de MDC:
 ---
 
 ## Licença
-Projeto configurado com licença **MIT** no `OpenApiConfig`. Ajuste conforme necessidade organizacional.
+Projeto configurado com licença **MIT** no `OpenApiConfig` (ajuste conforme necessidade).
