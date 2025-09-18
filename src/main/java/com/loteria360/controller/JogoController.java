@@ -32,7 +32,7 @@ public class JogoController {
 
     @PostMapping
     @Operation(summary = "Criar jogo", description = "Cria um novo jogo no sistema")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'VENDEDOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<JogoResponse> criarJogo(@Valid @RequestBody CriarJogoRequest request) {
         log.info("Criando jogo: {}", request.getNome());
         JogoResponse response = jogoService.criarJogo(request);
@@ -75,7 +75,7 @@ public class JogoController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar jogo", description = "Atualiza os dados de um jogo")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'VENDEDOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<JogoResponse> atualizarJogo(@PathVariable String id, @Valid @RequestBody AtualizarJogoRequest request) {
         log.info("Atualizando jogo: {}", id);
         JogoResponse response = jogoService.atualizarJogo(id, request);
@@ -84,7 +84,7 @@ public class JogoController {
 
     @PatchMapping("/{id}/toggle-status")
     @Operation(summary = "Ativar/Desativar jogo", description = "Alterna o status ativo/inativo de um jogo")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'VENDEDOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<JogoResponse> ativarDesativarJogo(@PathVariable String id) {
         log.info("Alterando status do jogo: {}", id);
         JogoResponse response = jogoService.ativarDesativarJogo(id);
