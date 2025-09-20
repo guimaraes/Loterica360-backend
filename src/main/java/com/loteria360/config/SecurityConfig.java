@@ -46,27 +46,33 @@ public class SecurityConfig implements WebMvcConfigurer {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/api/v1/caixas/ativas", "/api/v1/caixas/*/toggle-status").permitAll()
                 
-                // Endpoints apenas para ADMIN
-                .requestMatchers("/api/v1/usuarios/**").hasRole("ADMIN")
-                .requestMatchers("/api/v1/jogos/**").hasAnyRole("ADMIN", "GERENTE")
-                .requestMatchers("/api/v1/boloes/**").hasAnyRole("ADMIN", "GERENTE")
-                .requestMatchers("/api/v1/caixas/**").hasAnyRole("ADMIN", "GERENTE")
-                .requestMatchers("/api/v1/turnos/**").hasAnyRole("ADMIN", "GERENTE")
-                .requestMatchers("/api/v1/movimentos/**").hasAnyRole("ADMIN", "GERENTE")
-                .requestMatchers("/api/v1/relatorios/**").hasAnyRole("ADMIN", "GERENTE", "AUDITOR")
-                .requestMatchers("/api/v1/dashboard/**").hasAnyRole("ADMIN", "GERENTE", "AUDITOR")
+                // Endpoints específicos para VENDEDOR (devem vir antes dos gerais)
+                .requestMatchers("/api/v1/jogos/ativos").hasAnyRole("ADMIN", "GERENTE", "VENDEDOR", "AUDITOR")
+                .requestMatchers("/api/v1/caixas/ativas").hasAnyRole("ADMIN", "GERENTE", "VENDEDOR", "AUDITOR")
                 
-                // Endpoints para VENDEDOR - apenas vendas e clientes (necessário para vendas)
+                // Endpoints para VENDEDOR - vendas e clientes
                 .requestMatchers("/api/v1/vendas/**").hasAnyRole("ADMIN", "GERENTE", "VENDEDOR")
                 .requestMatchers("/api/v1/vendas-caixa/**").hasAnyRole("ADMIN", "GERENTE", "VENDEDOR")
                 .requestMatchers("/api/v1/contagem-caixa/**").hasAnyRole("ADMIN", "GERENTE", "VENDEDOR")
                 .requestMatchers("/api/v1/clientes/**").hasAnyRole("ADMIN", "GERENTE", "VENDEDOR", "AUDITOR")
                 
-                // Endpoints de leitura para VENDEDOR (necessários para vendas)
-                .requestMatchers("/api/v1/jogos/ativos").hasAnyRole("ADMIN", "GERENTE", "VENDEDOR", "AUDITOR")
-                .requestMatchers("/api/v1/caixas/ativas").hasAnyRole("ADMIN", "GERENTE", "VENDEDOR", "AUDITOR")
+                // Endpoints para relatórios (ADMIN, GERENTE, AUDITOR)
+                .requestMatchers("/api/v1/relatorios/**").hasAnyRole("ADMIN", "GERENTE", "AUDITOR")
+                
+                // Dashboard - VENDEDOR pode ver métricas básicas para vendas
+                .requestMatchers("/api/v1/dashboard/metrics").hasAnyRole("ADMIN", "GERENTE", "VENDEDOR", "AUDITOR")
+                .requestMatchers("/api/v1/dashboard/**").hasAnyRole("ADMIN", "GERENTE", "AUDITOR")
+                
+                // Endpoints apenas para ADMIN
+                .requestMatchers("/api/v1/usuarios/**").hasRole("ADMIN")
+                
+                // Endpoints para GERENTE e ADMIN (gerais - devem vir por último)
+                .requestMatchers("/api/v1/jogos/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers("/api/v1/boloes/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers("/api/v1/caixas/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers("/api/v1/turnos/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers("/api/v1/movimentos/**").hasAnyRole("ADMIN", "GERENTE")
                 
                 .anyRequest().authenticated()
             )

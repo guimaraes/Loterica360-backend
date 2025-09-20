@@ -30,5 +30,6 @@ public class LoginResponse {
         private PapelUsuario papel;
         private Boolean ativo;
         private LocalDateTime criadoEm;
+        private LocalDateTime atualizadoEm;
     }
 }

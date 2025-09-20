@@ -20,4 +20,5 @@ public class UsuarioResponse {
     private PapelUsuario papel;
     private Boolean ativo;
     private LocalDateTime criadoEm;
+    private LocalDateTime atualizadoEm;
 }

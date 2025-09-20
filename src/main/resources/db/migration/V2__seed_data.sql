@@ -1,6 +1,6 @@
 -- Inserir usuário administrador
 INSERT INTO usuario (id, nome, email, senha_hash, papel, ativo) VALUES
-(UUID(), 'Administrador', 'admin@loteria360.local', '$2a$10$zC1Wdfapz1AKzv1yNtokdOEOjcT625fgL2Xpe40qP2SJ2mJZ/Yf9C', 'ADMIN', TRUE);
+(UUID(), 'Administrador', 'admin@loteria360.local', '$2a$10$anmoVnCrMaujZO1NAkQAoObTAGHFQjkD/RzPCErGSYJcgU7TN3D/i', 'ADMIN', TRUE);
 
 -- Inserir jogos da loteria
 INSERT INTO jogo (id, nome, descricao, preco, ativo) VALUES
